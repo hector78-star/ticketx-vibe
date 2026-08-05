@@ -61,6 +61,14 @@
 // and to keep them clear of float rounding.
 export const TICKET_LISTING_TYPE = 'sell-products';
 export const EVENT_LISTING_TYPE = 'event';
+// Everything that is not a ticket: t-shirts, textbooks, whatever else students sell each other.
+// Same purchase process and the same off-platform handover, so it costs almost nothing to support
+// and roughly doubles what the marketplace is for.
+export const OTHER_LISTING_TYPE = 'sell-other';
+
+// The only two things a normal seller may create. Console still defines other types (daily-booking
+// and friends) and any listings already using them keep working, but they are not offered.
+export const SELLER_LISTING_TYPES = [TICKET_LISTING_TYPE, OTHER_LISTING_TYPE];
 
 export const listingFields = [
   // ---------------------------------------------------------------------------
@@ -505,6 +513,62 @@ export const listingTypes = [
   // An event is a catalog entry, never a thing anyone buys: default-inquiry is the lightest
   // process available and price, stock and availability are all switched off. Images are on
   // so the /events grid has something to show.
+  {
+    // "Sell a ticket". Declared locally so the label reads as the seller's intent rather than
+    // Console's generic "Sell products", and so delivery stays off: handover is arranged between
+    // buyer and seller, never posted.
+    //
+    // images stays true even though sellers get no photo step - ListingPage only renders its
+    // gallery when the type allows images, and that gallery is where the curated event photo is
+    // substituted in. Turning images off here would silently hide event photos.
+    listingType: TICKET_LISTING_TYPE,
+    label: 'Sell a ticket',
+    transactionType: {
+      process: 'default-purchase',
+      alias: 'default-purchase/release-1',
+      unitType: 'item',
+    },
+    stockType: 'multipleItems',
+    defaultListingFields: {
+      title: true,
+      description: true,
+      images: true,
+      price: true,
+      stock: true,
+      availability: false,
+      location: false,
+      shipping: false,
+      pickup: false,
+      payoutDetails: true,
+      files: false,
+    },
+  },
+  {
+    // "Sell anything else" - same process, same handover, ordinary listing fields. A seller here
+    // gets the normal title/description/photos flow; none of the ticket machinery applies.
+    listingType: OTHER_LISTING_TYPE,
+    label: 'Sell anything else',
+    transactionType: {
+      process: 'default-purchase',
+      alias: 'default-purchase/release-1',
+      unitType: 'item',
+    },
+    stockType: 'multipleItems',
+    defaultListingFields: {
+      title: true,
+      description: true,
+      images: true,
+      price: true,
+      stock: true,
+      availability: false,
+      location: false,
+      // Handover works exactly as it does for tickets: arranged directly between the two people.
+      shipping: false,
+      pickup: false,
+      payoutDetails: true,
+      files: false,
+    },
+  },
   {
     listingType: EVENT_LISTING_TYPE,
     label: 'Event',

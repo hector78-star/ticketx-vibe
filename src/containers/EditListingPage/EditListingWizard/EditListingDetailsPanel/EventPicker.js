@@ -107,6 +107,11 @@ const CreateEventForm = props => {
       ) : null}
       <div className={css.createActions}>
         <Button
+          // Must be type="button": Button spreads props onto a bare <button>, which HTML defaults
+          // to type="submit". This form is nested inside the listing wizard's form, so without
+          // this the click submits the wizard instead of creating the event - which is precisely
+          // why "add event" appeared to do nothing.
+          type="button"
           className={css.createButton}
           onClick={onSubmit}
           disabled={!canSubmit}

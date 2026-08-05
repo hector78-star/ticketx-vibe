@@ -26,7 +26,7 @@ import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
 
-import { EVENT_LISTING_TYPE } from '../../../../config/configListing';
+import { EVENT_LISTING_TYPE, SELLER_LISTING_TYPES } from '../../../../config/configListing';
 import { ADMIN_USER_ID } from '../../../../util/events';
 
 /**
@@ -326,10 +326,31 @@ const EditListingDetailsPanel = props => {
   // An event already being edited keeps its type visible, otherwise the admin could not reopen it.
   const isEditingAnEvent = publicData?.listingType === EVENT_LISTING_TYPE;
   const canCurateEvents = !!ADMIN_USER_ID && currentUser?.id?.uuid === ADMIN_USER_ID;
+  const existingListingType = publicData?.listingType;
+
+  // Sellers are offered exactly two things: sell a ticket, or sell anything else. Console still
+  // defines the template's other types and existing listings using them keep working - which is
+  // why a listing already on one of those types keeps it available here rather than being unable
+  // to reopen its own edit form.
+  const allowedListingTypes = [
+    ...SELLER_LISTING_TYPES,
+    ...(canCurateEvents || isEditingAnEvent ? [EVENT_LISTING_TYPE] : []),
+    ...(existingListingType ? [existingListingType] : []),
+  ];
+  const configuredListingTypes = config.listing.listingTypes;
+  const restricted = configuredListingTypes.filter(lt =>
+    allowedListingTypes.includes(lt.listingType)
+  );
+  // Fall back to "everything except events" when none of the seller types are configured. Without
+  // this, a marketplace whose Console defines different type ids - or any test fixture supplying
+  // its own - would be left with no selectable listing type at all, which is a worse failure than
+  // showing one option too many.
   const listingTypes =
-    canCurateEvents || isEditingAnEvent
-      ? config.listing.listingTypes
-      : config.listing.listingTypes.filter(lt => lt.listingType !== EVENT_LISTING_TYPE);
+    restricted.length > 0
+      ? restricted
+      : configuredListingTypes.filter(
+          lt => lt.listingType !== EVENT_LISTING_TYPE || canCurateEvents || isEditingAnEvent
+        );
   const listingFields = config.listing.listingFields;
   const listingCategories = config.categoryConfiguration.categories;
   const categoryKey = config.categoryConfiguration.key;

@@ -2,6 +2,7 @@ import React from 'react';
 
 // utils
 import { SCHEMA_TYPE_ENUM, SCHEMA_TYPE_MULTI_ENUM, SCHEMA_TYPE_LONG } from '../../util/types';
+import { SELLER_LISTING_TYPES } from '../../config/configListing';
 import { convertCategoriesToSelectTreeOptions, constructQueryParamName } from '../../util/search';
 
 // component imports
@@ -71,6 +72,16 @@ const FilterComponent = props => {
       const { scope, options } = config;
       const paramNames = [constructQueryParamName(key, scope)];
       const label = intl.formatMessage({ id: 'FilterComponent.listingTypeLabel' });
+      // TicketX: only the two types a seller can actually create are worth filtering by. The
+      // template's other types remain configured for any pre-existing listings, but offering them
+      // here would just be options that always return nothing. Events are excluded from search
+      // results entirely, so they have no place in this filter either.
+      const restrictedOptions = options.filter(opt =>
+        SELLER_LISTING_TYPES.includes(opt.option ?? opt.key ?? opt.value)
+      );
+      // Same fallback as the listing wizard: if this marketplace does not use the seller type ids,
+      // show what it does have rather than an empty filter.
+      const sellerOptions = restrictedOptions.length > 0 ? restrictedOptions : options;
 
       return (
         <SelectSingleFilter
@@ -79,7 +90,7 @@ const FilterComponent = props => {
           queryParamNames={[paramNames]}
           initialValues={initialValues(paramNames, liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          options={options}
+          options={sellerOptions}
           getAriaLabel={getAriaLabel}
           {...rest}
         />

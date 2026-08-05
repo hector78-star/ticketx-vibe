@@ -16,6 +16,7 @@ import { parse } from '../../util/urlHelpers';
 import { getReferralParams } from '../../util/webStorageHelpers';
 
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
+import { EVENT_LISTING_TYPE } from '../../config/configListing';
 
 // Pagination page size might need to be dynamic on responsive page layouts
 // Current design has max 3 columns 12 is divisible by 2 and 3
@@ -418,6 +419,21 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
     ? { listingTypePathParam, isListingTypeVariant: true }
     : {};
 
+  // TicketX: events are catalog entries, not things for sale, so they must not appear among
+  // search results. There is no "not equal" filter in the API, so the exclusion is expressed as
+  // an explicit list of every other listing type (comma-separated means "any of"). This only
+  // applies when the visitor has not picked a listing type themselves.
+  const hasExplicitListingType = !!rest.pub_listingType || !!listingTypePathParam;
+  // Guard against entries without a resolved listingType: joining undefined values would send a
+  // filter like ",,," and silently return nothing.
+  const nonEventListingTypes = (config.listing.listingTypes || [])
+    .map(lt => lt.listingType)
+    .filter(lt => !!lt && lt !== EVENT_LISTING_TYPE);
+  const excludeEventsMaybe =
+    !hasExplicitListingType && nonEventListingTypes.length > 0
+      ? { pub_listingType: nonEventListingTypes.join(',') }
+      : {};
+
   const {
     aspectWidth = 1,
     aspectHeight = 1,
@@ -430,6 +446,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
       ...rest,
       ...originMaybe,
       ...listingTypeVariantMaybe,
+      ...excludeEventsMaybe,
       page,
       perPage: RESULT_PAGE_SIZE,
       include: ['author', 'images'],

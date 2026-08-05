@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import classNames from 'classnames';
+import { useSelector } from 'react-redux';
 
 // Import util modules
 import { FormattedMessage } from '../../../../util/reactIntl';
@@ -24,6 +25,9 @@ import { H3, ListingLink } from '../../../../components';
 import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
+
+import { EVENT_LISTING_TYPE } from '../../../../config/configListing';
+import { ADMIN_USER_ID } from '../../../../util/events';
 
 /**
  * Get listing configuration. For existing listings, it is stored to publicData.
@@ -313,7 +317,19 @@ const EditListingDetailsPanel = props => {
 
   const classes = classNames(rootClassName || css.root, className);
   const { publicData, state } = listing?.attributes || {};
-  const listingTypes = config.listing.listingTypes;
+  const currentUser = useSelector(reduxState => reduxState.user?.currentUser);
+
+  // TicketX: the event catalog is admin-only, so the 'event' type is offered only to the curating
+  // account. This is the UX half of the restriction; the authorId filter in util/events.js is the
+  // half that still holds if someone creates an event listing another way.
+  //
+  // An event already being edited keeps its type visible, otherwise the admin could not reopen it.
+  const isEditingAnEvent = publicData?.listingType === EVENT_LISTING_TYPE;
+  const canCurateEvents = !!ADMIN_USER_ID && currentUser?.id?.uuid === ADMIN_USER_ID;
+  const listingTypes =
+    canCurateEvents || isEditingAnEvent
+      ? config.listing.listingTypes
+      : config.listing.listingTypes.filter(lt => lt.listingType !== EVENT_LISTING_TYPE);
   const listingFields = config.listing.listingFields;
   const listingCategories = config.categoryConfiguration.categories;
   const categoryKey = config.categoryConfiguration.key;

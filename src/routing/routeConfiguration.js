@@ -17,6 +17,8 @@ const CheckoutPage = loadable(() => import(/* webpackChunkName: "CheckoutPage" *
 const CMSPage = loadable(() => import(/* webpackChunkName: "CMSPage" */ '../containers/CMSPage/CMSPage'));
 const ContactDetailsPage = loadable(() => import(/* webpackChunkName: "ContactDetailsPage" */ '../containers/ContactDetailsPage/ContactDetailsPage'));
 const EditListingPage = loadable(() => import(/* webpackChunkName: "EditListingPage" */ '../containers/EditListingPage/EditListingPage'));
+const EventsPage = loadable(() => import(/* webpackChunkName: "EventsPage" */ '../containers/EventsPage/EventsPage'));
+const EventPage = loadable(() => import(/* webpackChunkName: "EventPage" */ '../containers/EventPage/EventPage'));
 const EmailVerificationPage = loadable(() => import(/* webpackChunkName: "EmailVerificationPage" */ '../containers/EmailVerificationPage/EmailVerificationPage'));
 const InboxPage = loadable(() => import(/* webpackChunkName: "InboxPage" */ '../containers/InboxPage/InboxPage'));
 const MakeOfferPage = loadable(() => import(/* webpackChunkName: "MakeOfferPage" */ '../containers/MakeOfferPage/MakeOfferPage'));
@@ -109,6 +111,20 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       prioritizeLibraryLoading: {
         map: isSearchPageWithMap,
       },
+    },
+    {
+      // TicketX: browse events, then drill into one to see its tickets.
+      path: '/events',
+      name: 'EventsPage',
+      ...authForPrivateMarketplace,
+      component: EventsPage,
+    },
+    {
+      path: '/events/:slug/:id',
+      name: 'EventPage',
+      ...authForPrivateMarketplace,
+      component: EventPage,
+      loadData: pageDataLoadingAPI.EventPage.loadData,
     },
     {
       path: '/l',

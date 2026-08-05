@@ -1369,6 +1369,22 @@ const mergeDefaultTypesAndFieldsForDebugging = isDebugging => {
   return isDebugging && isDev;
 };
 
+// TicketX: the curated-event model relies on the 'event' listing type and the ticket/event
+// listing fields defined in configListing.js, so those local definitions have to be merged in
+// every environment - not just when debugging locally. See the note above: this is the
+// documented switch to flip when a customization depends on custom listing types or fields.
+//
+// union() lets the second argument win on key conflicts, so local definitions override hosted
+// ones of the same key. configListing.js therefore only declares what Console does not already
+// provide: it adds the 'event' type rather than restating the five hosted types.
+//
+// Tests are excluded. Under test, the local defaults come from testHelpers.js rather than
+// configListing.js, and merging them injects fixture listing types ('rent-bicycles',
+// 'product-selling') into suites that declare their own hosted config - which changes the wizard
+// from a single-type flow to a type-picker flow and breaks assertions unrelated to this feature.
+// Test suites should exercise exactly the config they declare.
+const mergeLocalListingTypesAndFields = () => process.env.NODE_ENV !== 'test';
+
 // Note: by default, listing types and fields are only merged if explicitly set for debugging
 const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
   // Listing configuration is splitted to several assets in Console
@@ -1381,7 +1397,7 @@ const mergeListingConfig = (hostedConfig, defaultConfigs, categoriesInUse) => {
 
   // When debugging, include default configs by passing 'true' here.
   // Otherwise, use listing types and fields from hosted assets.
-  const shouldMerge = mergeDefaultTypesAndFieldsForDebugging(false);
+  const shouldMerge = mergeLocalListingTypesAndFields();
   const listingTypes = shouldMerge
     ? union(hostedListingTypes, defaultListingTypes, 'listingType')
     : hostedListingTypes;

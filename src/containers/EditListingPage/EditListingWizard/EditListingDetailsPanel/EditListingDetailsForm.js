@@ -25,7 +25,13 @@ import {
   CustomExtendedDataField,
 } from '../../../../components';
 // Import modules from this directory
+import EventPicker from './EventPicker';
 import css from './EditListingDetailsForm.module.css';
+
+import {
+  AUTOFILLED_TICKET_FIELDS,
+  TICKET_LISTING_TYPE,
+} from '../../../../config/configListing';
 
 const TITLE_MAX_LENGTH = 60;
 
@@ -256,8 +262,16 @@ const AddListingFields = props => {
     const isProviderScope = ['public', 'private'].includes(scope);
     const isTargetListingType = isFieldForListingType(listingType, fieldConfig);
     const isTargetCategory = isFieldForCategory(targetCategoryIds, fieldConfig);
+    // TicketX: the event picker writes these, so rendering them here too would give the seller a
+    // free-text box for details they are supposed to be choosing, not typing.
+    const isAutofilledByEventPicker =
+      listingType === TICKET_LISTING_TYPE && AUTOFILLED_TICKET_FIELDS.includes(key);
 
-    return isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory
+    return isKnownSchemaType &&
+      isProviderScope &&
+      isTargetListingType &&
+      isTargetCategory &&
+      !isAutofilledByEventPicker
       ? [
           ...pickedFields,
           <CustomExtendedDataField
@@ -344,6 +358,10 @@ const EditListingDetailsForm = props => (
       const { listingType, transactionProcessAlias, unitType } = values;
       const [allCategoriesChosen, setAllCategoriesChosen] = useState(false);
 
+      // TicketX: ticket listings get the curated event picker instead of a free-text title. The
+      // title is generated from the chosen event, so the two must never both be on screen.
+      const isTicketListing = listingType === TICKET_LISTING_TYPE;
+
       const titleRequiredMessage = intl.formatMessage({
         id: 'EditListingDetailsForm.titleRequired',
       });
@@ -420,7 +438,9 @@ const EditListingDetailsForm = props => (
             />
           )}
 
-          {showTitle && isCompatibleCurrency && (
+          {isTicketListing && isCompatibleCurrency && <EventPicker formId={formId} />}
+
+          {showTitle && isCompatibleCurrency && !isTicketListing && (
             <FieldTextInput
               id={`${formId}title`}
               name="title"

@@ -1,0 +1,129 @@
+.main {
+  padding: 24px 24px 64px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 24px 0 40px 0;
+}
+
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.headerImageWrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background-color: var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .headerImageWrapper {
+    width: 360px;
+    padding-bottom: 240px;
+  }
+}
+
+.headerImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.headerBody {
+  flex: 1;
+}
+
+.eventTitle {
+  margin: 0 0 8px 0;
+}
+
+.eventMeta {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 24px 0;
+  color: var(--colorGrey500);
+}
+
+.guidance {
+  display: flex;
+  gap: 32px;
+  margin: 0 0 24px 0;
+}
+
+.guidanceRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.guidanceTerm {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey500);
+}
+
+.guidanceValue {
+  composes: h3 from global;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+.sellCta {
+  composes: buttonSecondary from global;
+  display: inline-flex;
+  width: auto;
+  min-height: 40px;
+  padding: 0 20px;
+}
+
+.ticketsHeading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 24px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.ticketCount {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+  font-weight: var(--fontWeightRegular);
+}
+
+.notice {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey500);
+}
+
+.ticketGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 550px) {
+  .ticketGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ticketGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -52,7 +52,125 @@
  *   - isRequired (optional):         Is the field required for providers to fill
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
+// TicketX: the event catalog.
+//
+// An event is a listing of type 'event' authored by the admin account. A ticket listing points
+// at one via publicData.eventId. Admin curates events; sellers only ever pick from them.
+//
+// Money fields are stored as integer minor units (pence) to match how Sharetribe handles money
+// and to keep them clear of float rounding.
+export const TICKET_LISTING_TYPE = 'sell-products';
+export const EVENT_LISTING_TYPE = 'event';
+
 export const listingFields = [
+  // ---------------------------------------------------------------------------
+  // Event fields. Admin-facing: these render as inputs when the admin account
+  // creates an event, and as details on the event page.
+  // ---------------------------------------------------------------------------
+  {
+    key: 'eventDate',
+    scope: 'public',
+    schemaType: 'long',
+    // Listing fields have no date type, so the date is a sortable integer in YYYYMMDD form
+    // (20260914 = 14 Sep 2026). Free text could not be ordered chronologically and epoch
+    // milliseconds could not realistically be typed by a human.
+    numberConfig: { minimum: 20000101, maximum: 21001231 },
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Date' },
+    showConfig: { label: 'Date', isDetail: true },
+    saveConfig: {
+      label: 'Event date (YYYYMMDD)',
+      placeholderMessage: 'e.g. 20260914 for 14 Sep 2026',
+      isRequired: true,
+      requiredMessage: 'An event needs a date.',
+    },
+  },
+  {
+    key: 'eventTime',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Start time' },
+    showConfig: { label: 'Start time', isDetail: true },
+    saveConfig: { label: 'Start time', placeholderMessage: 'e.g. 19:30' },
+  },
+  {
+    key: 'venue',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Venue' },
+    showConfig: { label: 'Venue', isDetail: true },
+    saveConfig: {
+      label: 'Venue',
+      placeholderMessage: 'e.g. O2 Academy Bristol',
+      isRequired: true,
+      requiredMessage: 'An event needs a venue.',
+    },
+  },
+  {
+    key: 'faceValue',
+    scope: 'public',
+    schemaType: 'long',
+    numberConfig: { minimum: 0, maximum: 1000000 },
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Face value' },
+    showConfig: { label: 'Face value', isDetail: true },
+    saveConfig: {
+      label: 'Face value in pence',
+      placeholderMessage: 'e.g. 4500 for £45.00',
+      isRequired: true,
+      requiredMessage: 'Sellers need a face value to price against.',
+    },
+  },
+  {
+    key: 'lastSoldPrice',
+    scope: 'public',
+    schemaType: 'long',
+    numberConfig: { minimum: 0, maximum: 1000000 },
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Last sold for' },
+    showConfig: { label: 'Last sold for', isDetail: true },
+    saveConfig: {
+      label: 'Last sold price in pence',
+      placeholderMessage: 'e.g. 6000 for £60.00',
+      // Left optional: a freshly curated event has no sale history yet.
+      isRequired: false,
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Ticket fields. Written by the event picker, never typed by a seller, so they
+  // are excluded from the generic custom-field renderer in EditListingDetailsForm.
+  // ---------------------------------------------------------------------------
+  {
+    key: 'eventId',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    // Deliberately no filterConfig. SearchPage's FilterComponent has no branch for schemaType
+    // 'text', so marking this indexed registers a filter it cannot render and crashes the page.
+    // Nothing is lost: the event page queries the SDK directly rather than through SearchPage,
+    // and the server-side search index is a Sharetribe-side concern that local config cannot
+    // create in any case.
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Event' },
+    showConfig: { label: 'Event', isDetail: false },
+    saveConfig: { label: 'Event' },
+  },
+];
+
+// Ticket fields that the event picker fills in from the chosen event. They are kept out of the
+// seller-facing form entirely: sellers choose an event, they do not retype its details.
+export const AUTOFILLED_TICKET_FIELDS = [
+  'eventId',
+  'eventTitle',
+  'eventDate',
+  'eventTime',
+  'venue',
+];
+
+// Reference: the listing field shapes shipped with the template, kept as documentation.
+//
   // {
   //   "scope": "public",
   //   "label": "Gears",
@@ -213,7 +331,6 @@ export const listingFields = [
   //     placeholderMessage: 'Some private note about this bike...',
   //   },
   // },
-];
 
 ///////////////////////////////////////////////////////////////////////
 // Configurations related to listing types and transaction processes //
@@ -283,6 +400,39 @@ export const listingFields = [
  */
 
 export const listingTypes = [
+  // TicketX: the curated event catalog.
+  //
+  // Only the 'event' type is declared locally. The five types configured in Console
+  // (sell-products and friends) come through the hosted asset untouched - union() in
+  // configHelpers.js lets local entries win by key, so restating them here would silently
+  // override Console.
+  //
+  // An event is a catalog entry, never a thing anyone buys: default-inquiry is the lightest
+  // process available and price, stock and availability are all switched off. Images are on
+  // so the /events grid has something to show.
+  {
+    listingType: EVENT_LISTING_TYPE,
+    label: 'Event',
+    transactionType: {
+      process: 'default-inquiry',
+      alias: 'default-inquiry/release-1',
+      unitType: 'inquiry',
+    },
+    defaultListingFields: {
+      title: true,
+      description: true,
+      images: true,
+      price: false,
+      stock: false,
+      availability: false,
+      location: false,
+      payoutDetails: false,
+      shipping: false,
+      pickup: false,
+      files: false,
+    },
+  },
+
   // // Here are some examples of listingTypes
   // // TODO: SearchPage does not work well if both booking and product selling are used at the same time
   // {

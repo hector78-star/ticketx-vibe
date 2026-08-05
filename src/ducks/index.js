@@ -10,6 +10,7 @@ import routing from './routing.duck';
 import ui from './ui.duck';
 import hostedAssets from './hostedAssets.duck';
 import featuredListings from './featuredListings.duck';
+import events from './events.duck';
 import marketplaceData from './marketplaceData.duck';
 import paymentMethods from './paymentMethods.duck';
 import stripe from './stripe.duck';
@@ -23,6 +24,7 @@ export {
   ui,
   hostedAssets,
   featuredListings,
+  events,
   marketplaceData,
   paymentMethods,
   stripe,

@@ -1,0 +1,63 @@
+.root {
+  margin-bottom: 24px;
+}
+
+.select {
+  margin-bottom: 12px;
+}
+
+.guidance {
+  padding: 16px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorGrey50);
+}
+
+.guidanceHeading {
+  composes: h5 from global;
+  margin: 0 0 8px 0;
+  color: var(--colorGrey700);
+}
+
+.guidanceList {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.guidanceRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.guidanceTerm {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey500);
+}
+
+.guidanceValue {
+  composes: h4 from global;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+.guidanceNote {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 12px 0 0 0;
+  color: var(--colorGrey500);
+}
+
+.setupNotice,
+.loading {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 24px 0;
+  color: var(--colorGrey500);
+}
+
+.error {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 24px 0;
+  color: var(--colorFail);
+}

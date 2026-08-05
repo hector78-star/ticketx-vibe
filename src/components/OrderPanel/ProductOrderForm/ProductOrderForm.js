@@ -348,7 +348,12 @@ const ProductOrderForm = props => {
 
   const hasOneItemLeft = currentStock && currentStock === 1;
   const hasOneItemMode = !allowOrdersOfMultipleItems && currentStock > 0;
-  const quantityMaybe = hasOneItemLeft || hasOneItemMode ? { quantity: '1' } : {};
+  // TicketX: default the quantity to 1 whenever there is stock, rather than only when exactly one
+  // item is left. Leaving it on "Select…" makes "Buy now" appear broken - the form is simply
+  // invalid, so the click does nothing and says nothing. Buying one is the overwhelmingly common
+  // case, and the buyer can still change it.
+  const hasStock = currentStock > 0;
+  const quantityMaybe = hasOneItemLeft || hasOneItemMode || hasStock ? { quantity: '1' } : {};
   const deliveryMethodMaybe =
     shippingEnabled && !pickupEnabled
       ? { deliveryMethod: 'shipping' }

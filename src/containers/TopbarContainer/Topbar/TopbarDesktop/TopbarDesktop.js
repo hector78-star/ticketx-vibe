@@ -20,6 +20,47 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 import css from './TopbarDesktop.module.css';
 
 import { ADMIN_USER_ID } from '../../../../util/events';
+import {
+  TICKET_LISTING_TYPE,
+  OTHER_LISTING_TYPE,
+} from '../../../../config/configListing';
+
+/**
+ * TicketX primary navigation: tickets, everything else, and the seller hub.
+ *
+ * Both browse tabs reuse the existing /s/:listingType search route, so each is a full search page
+ * scoped to one listing type rather than a new page that would drift from it.
+ */
+const BrowseLinks = () => (
+  <>
+    <NamedLink
+      className={css.topbarLink}
+      name="SearchPageWithListingType"
+      params={{ listingType: TICKET_LISTING_TYPE }}
+    >
+      <span className={css.topbarLinkLabel}>
+        <FormattedMessage id="TopbarDesktop.tickets" />
+      </span>
+    </NamedLink>
+    <NamedLink
+      className={css.topbarLink}
+      name="SearchPageWithListingType"
+      params={{ listingType: OTHER_LISTING_TYPE }}
+    >
+      <span className={css.topbarLinkLabel}>
+        <FormattedMessage id="TopbarDesktop.marketplace" />
+      </span>
+    </NamedLink>
+  </>
+);
+
+const SellLink = () => (
+  <NamedLink className={css.topbarLink} name="SellPage">
+    <span className={css.topbarLinkLabel}>
+      <FormattedMessage id="TopbarDesktop.sell" />
+    </span>
+  </NamedLink>
+);
 
 const SignupLink = () => {
   return (
@@ -183,6 +224,8 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
+  const sellLinkMaybe = authenticatedOnClientSide ? <SellLink /> : null;
+
   const inboxLinkMaybe = authenticatedOnClientSide ? (
     <InboxLink notificationCount={notificationCount} inboxTab={inboxTab} />
   ) : null;
@@ -238,6 +281,8 @@ const TopbarDesktop = props => {
         showCreateListingsLink={showCreateListingsLink}
       />
 
+      <BrowseLinks />
+      {sellLinkMaybe}
       {inboxLinkMaybe}
       {profileMenuMaybe}
       {signupLinkMaybe}

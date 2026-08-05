@@ -42,6 +42,7 @@ import MobileListingImage from './MobileListingImage';
 import MobileOrderBreakdown from './MobileOrderBreakdown';
 
 import css from './CheckoutPage.module.css';
+import { useEventImages, withEventImage } from '../../hooks/useEventImages';
 
 // Stripe PaymentIntent statuses, where user actions are already completed
 // https://stripe.com/docs/payments/payment-intents/status
@@ -450,6 +451,8 @@ export const CheckoutPageWithPayment = props => {
     isTransactionInitiateListingNotFoundError(initiateOrderError);
 
   const { listing, transaction, orderData } = pageData;
+  // Scoped to this one listing, so the catalog is only fetched when a ticket is being bought.
+  const eventImages = useEventImages([listing]);
   const existingTransaction = ensureTransaction(transaction);
   const speculatedTransaction = ensureTransaction(speculatedTransactionMaybe, {}, null);
 
@@ -497,7 +500,12 @@ export const CheckoutPageWithPayment = props => {
     !isPaymentExpired
   );
 
-  const firstImage = listing?.images?.length > 0 ? listing.images[0] : null;
+  // TicketX: tickets carry no images of their own, so checkout borrows the curated event's photo
+  // exactly as browse and the listing page do. Without this the order summary shows "NO IMAGE"
+  // at the one moment a buyer most wants to see what they are paying for.
+  const listingWithEventImage = withEventImage(listing, eventImages);
+  const firstImage =
+    listingWithEventImage?.images?.length > 0 ? listingWithEventImage.images[0] : null;
 
   const listingLink = (
     <NamedLink

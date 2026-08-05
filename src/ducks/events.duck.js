@@ -3,6 +3,7 @@ import * as log from '../util/log';
 import { storableError } from '../util/errors';
 import { addMarketplaceEntities } from './marketplaceData.duck';
 import { queryEvents, hasAdminConfigured } from '../util/events';
+import { EVENT_LISTING_TYPE } from '../config/configListing';
 
 /**
  * TicketX event catalog.

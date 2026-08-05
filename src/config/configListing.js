@@ -162,7 +162,9 @@ export const listingFields = [
     // and the server-side search index is a Sharetribe-side concern that local config cannot
     // create in any case.
     filterConfig: { indexForSearch: false, showFilter: false, label: 'Event' },
-    showConfig: { label: 'Event', isDetail: false },
+    // A raw UUID means nothing to a buyer, and it was rendering as a visible "Event" row on the
+    // listing page. The event name reaches them through the listing title instead.
+    showConfig: { label: 'Event', isDetail: false, displayOnListingPage: false },
     saveConfig: { label: 'Event' },
   },
   {
@@ -206,7 +208,7 @@ export const listingFields = [
     schemaType: 'boolean',
     listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
     filterConfig: { indexForSearch: false, showFilter: false, label: 'Transferability confirmed' },
-    showConfig: { label: 'Seller confirmed transferable', isDetail: false },
+    showConfig: { label: 'Seller confirmed transferable', isDetail: false, displayOnListingPage: false },
     saveConfig: { label: 'Transferability confirmed' },
   },
   {
@@ -215,7 +217,7 @@ export const listingFields = [
     schemaType: 'boolean',
     listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
     filterConfig: { indexForSearch: false, showFilter: false, label: 'PDF attestation' },
-    showConfig: { label: 'Seller attested to PDF validity', isDetail: false },
+    showConfig: { label: 'Seller attested to PDF validity', isDetail: false, displayOnListingPage: false },
     saveConfig: { label: 'PDF attestation' },
   },
   {
@@ -224,7 +226,7 @@ export const listingFields = [
     schemaType: 'boolean',
     listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
     filterConfig: { indexForSearch: false, showFilter: false, label: 'Handover acknowledged' },
-    showConfig: { label: 'Seller acknowledged handover', isDetail: false },
+    showConfig: { label: 'Seller acknowledged handover', isDetail: false, displayOnListingPage: false },
     saveConfig: { label: 'Handover acknowledgement' },
   },
   {

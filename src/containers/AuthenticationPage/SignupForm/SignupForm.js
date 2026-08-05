@@ -64,6 +64,14 @@ const SignupFormComponent = props => (
           id: 'SignupForm.emailInvalid',
         })
       );
+      // TicketX: the marketplace is closed to St Andrews students. See SIGNUP_EMAIL_DOMAIN in
+      // util/validators.js - this is the UI gate; email verification is what proves ownership.
+      const emailDomain = validators.emailDomainValid(
+        intl.formatMessage(
+          { id: 'SignupForm.emailDomainInvalid' },
+          { domain: validators.SIGNUP_EMAIL_DOMAIN }
+        )
+      );
 
       // password
       const passwordRequiredMessage = intl.formatMessage({
@@ -135,7 +143,7 @@ const SignupFormComponent = props => (
                 placeholder={intl.formatMessage({
                   id: 'SignupForm.emailPlaceholder',
                 })}
-                validate={validators.composeValidators(emailRequired, emailValid)}
+                validate={validators.composeValidators(emailRequired, emailValid, emailDomain)}
               />
               <div className={css.name}>
                 <FieldTextInput

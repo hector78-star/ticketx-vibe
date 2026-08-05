@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { isEmpty } from '../../util/common';
 import { pickUserFieldsData, addScopePrefix } from '../../util/userHelpers';
 import { pickReferralData } from '../../util/webStorageHelpers';
+import { usernameFromEmail } from '../../util/validators';
 
 // Returns full userType config based on selected userType
 const getUserTypeConfig = (userType, userTypes) => {
@@ -82,7 +83,15 @@ export const getExtendedDataMaybe = (submitValues, userType, userFields, extraDa
  */
 export const getHandleSubmitSignup = ({ submitSignup, userFields, userTypes }) => values => {
   const { userType, email, password, fname, lname, displayName, ...rest } = values;
-  const displayNameMaybe = displayName ? { displayName: displayName.trim() } : {};
+  // TicketX: the username other students see is the part of the St Andrews address before the @.
+  // It is derived, never chosen - identifiability is what the trust model rests on, so a
+  // self-chosen display name would undo it. Any displayName the form collected is ignored.
+  const derivedUsername = usernameFromEmail(email);
+  const displayNameMaybe = derivedUsername
+    ? { displayName: derivedUsername }
+    : displayName
+    ? { displayName: displayName.trim() }
+    : {};
 
   // Set referral to user private data if it exists and is valid
   const userTypeConfig = getUserTypeConfig(userType, userTypes);
@@ -129,7 +138,13 @@ export const getHandleSubmitConfirm = ({
     ...rest
   } = values;
 
-  const displayNameMaybe = displayName ? { displayName: displayName.trim() } : {};
+  // Same derivation as the password signup path: the username follows the address in use.
+  const derivedUsername = usernameFromEmail(newEmail || email);
+  const displayNameMaybe = derivedUsername
+    ? { displayName: derivedUsername }
+    : displayName
+    ? { displayName: displayName.trim() }
+    : {};
 
   // Pass email, fistName or lastName to Marketplace API only if user has edited them
   // and they can't be fetched directly from idp provider (e.g. Facebook)

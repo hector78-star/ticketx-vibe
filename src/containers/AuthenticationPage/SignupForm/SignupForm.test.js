@@ -135,7 +135,9 @@ describe('SignupForm', () => {
     // Type the values to the sign up form
     await user.type(
       screen.getByRole('textbox', { name: 'SignupForm.emailLabel' }),
-      'joe@example.com'
+      // TicketX: signup is restricted to St Andrews addresses, so the fixture must use one -
+      // an example.com address now correctly leaves the submit button disabled.
+      'joe@st-andrews.ac.uk'
     );
     await user.type(screen.getByRole('textbox', { name: 'SignupForm.firstNameLabel' }), 'Joe');
     await user.type(screen.getByRole('textbox', { name: 'SignupForm.lastNameLabel' }), 'Dunphy');

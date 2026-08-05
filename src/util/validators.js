@@ -134,6 +134,49 @@ export const emailFormatValid = message => value => {
   return value && EMAIL_RE.test(value) ? VALID : message;
 };
 
+/**
+ * TicketX: the marketplace is closed to University of St Andrews students.
+ *
+ * Change this one constant to open the marketplace to a different institution. Sub-domains are
+ * accepted (someone@sms.st-andrews.ac.uk) but look-alikes are not: the check requires the value to
+ * end with either "@st-andrews.ac.uk" or ".st-andrews.ac.uk", so "st-andrews.ac.uk.evil.com" and
+ * "notst-andrews.ac.uk" both fail.
+ *
+ * This is a UI-level gate. Account creation goes straight from the browser to the Marketplace API,
+ * so it stops honest mistakes and casual sign-ups, not a determined person calling the API
+ * directly. Email verification is what actually proves the address belongs to them.
+ */
+export const SIGNUP_EMAIL_DOMAIN = 'st-andrews.ac.uk';
+
+export const emailDomainValid = (message, domain = SIGNUP_EMAIL_DOMAIN) => value => {
+  if (!value) {
+    return message;
+  }
+  const lower = String(value).toLowerCase().trim();
+  const suffix = `@${domain.toLowerCase()}`;
+  const subdomainSuffix = `.${domain.toLowerCase()}`;
+  const atIndex = lower.lastIndexOf('@');
+  if (atIndex === -1) {
+    return message;
+  }
+  const host = lower.slice(atIndex + 1);
+  const isExact = lower.endsWith(suffix);
+  const isSubdomain = host.endsWith(subdomainSuffix);
+  return isExact || isSubdomain ? VALID : message;
+};
+
+/**
+ * The username shown to other students: the part of the address before the @.
+ * Returns null for anything that isn't a usable address, so callers can fall back.
+ */
+export const usernameFromEmail = email => {
+  if (!email || typeof email !== 'string') {
+    return null;
+  }
+  const local = email.trim().split('@')[0];
+  return local ? local.toLowerCase() : null;
+};
+
 export const moneySubUnitAmountAtLeast = (message, minValue) => value => {
   return value instanceof Money && value.amount >= minValue ? VALID : message;
 };

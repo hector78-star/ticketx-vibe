@@ -97,7 +97,8 @@ const userFields = [
 ];
 
 const authInfo = {
-  email: 'name@example.com',
+  // TicketX: signup is restricted to St Andrews addresses.
+  email: 'name@st-andrews.ac.uk',
   firstName: 'Firstname',
   lastName: 'Lastname',
   idpId: 'idpId',

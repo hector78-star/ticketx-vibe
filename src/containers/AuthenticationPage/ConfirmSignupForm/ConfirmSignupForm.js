@@ -55,6 +55,14 @@ const ConfirmSignupFormComponent = props => (
           id: 'ConfirmSignupForm.emailInvalid',
         })
       );
+      // TicketX: the marketplace is closed to St Andrews students. See SIGNUP_EMAIL_DOMAIN in
+      // util/validators.js - this is the UI gate; email verification is what proves ownership.
+      const emailDomain = validators.emailDomainValid(
+        intl.formatMessage(
+          { id: 'ConfirmSignupForm.emailDomainInvalid' },
+          { domain: validators.SIGNUP_EMAIL_DOMAIN }
+        )
+      );
 
       // Custom user fields. Since user types are not supported here,
       // only fields with no user type id limitation are selected.
@@ -100,7 +108,7 @@ const ConfirmSignupFormComponent = props => (
                   id: 'ConfirmSignupForm.emailPlaceholder',
                 })}
                 initialValue={email}
-                validate={validators.composeValidators(emailRequired, emailValid)}
+                validate={validators.composeValidators(emailRequired, emailValid, emailDomain)}
               />
               <div className={css.name}>
                 <FieldTextInput

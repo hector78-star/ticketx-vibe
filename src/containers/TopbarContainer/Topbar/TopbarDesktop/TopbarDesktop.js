@@ -54,6 +54,14 @@ const BrowseLinks = () => (
   </>
 );
 
+const MyTicketsLink = () => (
+  <NamedLink className={css.topbarLink} name="InboxPage" params={{ tab: 'orders' }}>
+    <span className={css.topbarLinkLabel}>
+      <FormattedMessage id="TopbarDesktop.myTickets" />
+    </span>
+  </NamedLink>
+);
+
 const SellLink = () => (
   <NamedLink className={css.topbarLink} name="SellPage">
     <span className={css.topbarLinkLabel}>
@@ -224,6 +232,7 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
+  const myTicketsLinkMaybe = authenticatedOnClientSide ? <MyTicketsLink /> : null;
   const sellLinkMaybe = authenticatedOnClientSide ? <SellLink /> : null;
 
   const inboxLinkMaybe = authenticatedOnClientSide ? (
@@ -282,6 +291,7 @@ const TopbarDesktop = props => {
       />
 
       <BrowseLinks />
+      {myTicketsLinkMaybe}
       {sellLinkMaybe}
       {inboxLinkMaybe}
       {profileMenuMaybe}

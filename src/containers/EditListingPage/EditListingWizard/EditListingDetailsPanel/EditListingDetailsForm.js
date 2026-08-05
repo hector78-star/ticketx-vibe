@@ -368,6 +368,15 @@ const EditListingDetailsForm = props => (
       // title is generated from the chosen event, so the two must never both be on screen.
       const isTicketListing = listingType === TICKET_LISTING_TYPE;
 
+      // Flow 5.3 presents one stage at a time. Rather than restructure the wizard, each stage is
+      // revealed once the previous one is answered: pick an event, then say what kind of ticket it
+      // is, then attest, then describe. A seller never faces the whole form at once, and cannot
+      // fill in details for an event they have not chosen.
+      const hasChosenEvent = !!values.pub_eventId;
+      const hasChosenTicketType = !!values.pub_ticketType;
+      const ticketStageReady = !isTicketListing || hasChosenEvent;
+      const descriptionStageReady = !isTicketListing || hasChosenTicketType;
+
       const titleRequiredMessage = intl.formatMessage({
         id: 'EditListingDetailsForm.titleRequired',
       });
@@ -446,7 +455,7 @@ const EditListingDetailsForm = props => (
 
           {isTicketListing && isCompatibleCurrency && <EventPicker formId={formId} />}
 
-          {isTicketListing && isCompatibleCurrency && (
+          {isTicketListing && isCompatibleCurrency && ticketStageReady && (
             <EditListingTicketFields formId={formId} />
           )}
 
@@ -466,7 +475,7 @@ const EditListingDetailsForm = props => (
             />
           )}
 
-          {showDescription && isCompatibleCurrency && (
+          {showDescription && isCompatibleCurrency && descriptionStageReady && (
             <FieldTextInput
               id={`${formId}description`}
               name="description"

@@ -233,25 +233,11 @@ export const listingFields = [
     showConfig: { label: 'Seller acknowledged handover', isDetail: false, displayOnListingPage: false },
     saveConfig: { label: 'Handover acknowledgement' },
   },
-  {
-    // PRIVATE scope. Listing private data is readable only by the listing's author (and operator),
-    // never by other users, so putting the number here keeps it off the public listing. Revealing
-    // it to a buyer after purchase needs a server-side endpoint that checks for a paid transaction
-    // - see the note in EditListingTicketFields.js. Storing it publicly would expose every
-    // seller's phone number to anyone browsing, which is exactly what must not happen.
-    key: 'whatsappNumber',
-    scope: 'private',
-    schemaType: 'text',
-    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
-    filterConfig: { indexForSearch: false, showFilter: false, label: 'WhatsApp number' },
-    showConfig: { label: 'WhatsApp number', isDetail: false },
-    saveConfig: { label: 'Your WhatsApp number' },
-  },
 ];
 
 // Ticket type values. Handover is identical for all three - buyer and seller arrange it between
-// themselves in the message thread or over WhatsApp - so the type drives the attestations the
-// seller must give, not a delivery mechanism.
+// themselves in the in-app message thread - so the type drives the attestations the seller must
+// give, not a delivery mechanism.
 export const TICKET_TYPE_MOBILE = 'mobile-transfer';
 export const TICKET_TYPE_PDF = 'pdf';
 export const TICKET_TYPE_PHYSICAL = 'physical';
@@ -275,7 +261,6 @@ export const BRANCHED_TICKET_FIELDS = [
   'transferabilityConfirmed',
   'pdfAttestationConfirmed',
   'physicalHandoverAcknowledged',
-  'whatsappNumber',
 ];
 
 // Reference: the listing field shapes shipped with the template, kept as documentation.

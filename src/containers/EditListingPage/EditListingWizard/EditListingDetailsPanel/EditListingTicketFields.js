@@ -13,11 +13,15 @@ import {
 import css from './EditListingTicketFields.module.css';
 
 /**
- * Ticket type, its attestation, and the seller's WhatsApp number.
+ * Ticket type and its attestation.
  *
  * The three types differ only in what the seller is attesting to. Handover itself is identical:
- * buyer and seller arrange it in the message thread or over WhatsApp, so there is no delivery
- * method to choose and no PDF to upload at listing time.
+ * buyer and seller arrange it in the in-app message thread, so there is no delivery method to
+ * choose and no PDF to upload at listing time.
+ *
+ * Following flow 5.3, each stage appears only once the one before it is answered, so a seller sees
+ * one question at a time instead of a wall of fields. The underlying form is unchanged - this is
+ * disclosure, not a different submission model.
  */
 const TICKET_TYPE_OPTIONS = [
   { value: TICKET_TYPE_MOBILE, labelId: 'EditListingTicketFields.typeMobile' },
@@ -118,25 +122,6 @@ const EditListingTicketFields = props => {
           intl={intl}
         />
       ) : null}
-
-      {/*
-        Stored in the listing's PRIVATE data, so it is never part of the public listing and is not
-        visible to anyone browsing. Surfacing it to a buyer once they have paid still needs a
-        server-side endpoint that verifies a completed transaction before returning it - that piece
-        is not built yet, so today the number is captured and kept private, not yet revealed.
-      */}
-      <FieldTextInput
-        id={`${formId}priv_whatsappNumber`}
-        name="priv_whatsappNumber"
-        className={css.field}
-        type="text"
-        label={intl.formatMessage({ id: 'EditListingTicketFields.whatsappLabel' })}
-        placeholder={intl.formatMessage({ id: 'EditListingTicketFields.whatsappPlaceholder' })}
-        validate={required(intl.formatMessage({ id: 'EditListingTicketFields.whatsappRequired' }))}
-      />
-      <p className={css.privacyNote}>
-        <FormattedMessage id="EditListingTicketFields.whatsappPrivacy" />
-      </p>
 
       <p className={css.handoverNote}>
         <FormattedMessage id="EditListingTicketFields.handoverNote" />

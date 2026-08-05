@@ -133,9 +133,6 @@ export class TransactionPanelComponent extends Component {
       hasViewingRights,
       transactionFieldsComponent,
       sendMessageForm,
-      onSendMessage,
-      transactionId,
-      ownWhatsappNumber,
     } = this.props;
 
     const hasTransitions = transitions.length > 0;
@@ -296,15 +293,7 @@ export class TransactionPanelComponent extends Component {
               </div>
             ) : null}
             {showHandoverPanel ? (
-              <HandoverPanel
-                isProvider={isProvider}
-                listing={listing}
-                provider={provider}
-                messages={messages}
-                ownWhatsappNumber={this.props.ownWhatsappNumber}
-                onSendMessage={onSendMessage}
-                transactionId={transactionId}
-              />
+              <HandoverPanel isProvider={isProvider} listing={listing} />
             ) : null}
 
             <FeedSection

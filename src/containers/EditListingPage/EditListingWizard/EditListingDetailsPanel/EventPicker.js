@@ -144,6 +144,14 @@ const EventPicker = props => {
 
   const [query, setQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  // The chosen event, held locally as well as in the form.
+  //
+  // ownListings.create returns an entity of type "ownListing", but getListingsById looks up type
+  // "listing", so a just-created event cannot be found in the catalog list. Relying on that lookup
+  // made a newly added event vanish from the picker until the next page reloaded it via the public
+  // query. Keeping the selection here means the picker renders what the seller actually chose,
+  // whichever way it arrived.
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     if (!fetched && !inProgress) {
@@ -152,7 +160,9 @@ const EventPicker = props => {
   }, [dispatch, config, fetched, inProgress]);
 
   const summaries = useMemo(() => events.map(eventSummary).filter(Boolean), [events]);
-  const selected = summaries.find(e => e.id === values.pub_eventId);
+  const selected =
+    summaries.find(e => e.id === values.pub_eventId) ||
+    (selectedEvent?.id === values.pub_eventId ? selectedEvent : null);
 
   const suggestions = useMemo(
     () => fuzzySearch(summaries, query, e => `${e.title} ${e.venue || ''}`, MAX_SUGGESTIONS),
@@ -161,6 +171,7 @@ const EventPicker = props => {
 
   const selectEvent = chosen => {
     if (!chosen) return;
+    setSelectedEvent(chosen);
     form.batch(() => {
       form.change('pub_eventId', chosen.id);
       form.change('pub_eventTitle', chosen.title);
@@ -174,6 +185,7 @@ const EventPicker = props => {
   };
 
   const clearSelection = () => {
+    setSelectedEvent(null);
     form.batch(() => {
       form.change('pub_eventId', undefined);
       form.change('pub_eventTitle', undefined);

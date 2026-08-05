@@ -1,0 +1,16 @@
+.root { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 12px 0 20px 0; }
+.ratingBlock { display: flex; align-items: baseline; gap: 8px; }
+.stars { color: var(--marketplaceColor); letter-spacing: 2px; }
+.ratingText { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey700); }
+.sales { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey500); }
+.loading { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey500); }
+.verified {
+  composes: marketplaceTinyFontStyles from global;
+  padding: 3px 10px; border-radius: 100px;
+  background-color: var(--colorSuccess, #2ecc71); color: var(--colorWhite);
+}
+.unverified {
+  composes: marketplaceTinyFontStyles from global;
+  padding: 3px 10px; border-radius: 100px;
+  background-color: var(--colorGrey100); color: var(--colorGrey700);
+}

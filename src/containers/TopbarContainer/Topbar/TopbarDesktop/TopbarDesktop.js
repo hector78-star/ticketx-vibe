@@ -55,7 +55,7 @@ const BrowseLinks = () => (
 );
 
 const MyTicketsLink = () => (
-  <NamedLink className={css.topbarLink} name="InboxPage" params={{ tab: 'orders' }}>
+  <NamedLink className={css.topbarLink} name="MyTicketsPage">
     <span className={css.topbarLinkLabel}>
       <FormattedMessage id="TopbarDesktop.myTickets" />
     </span>

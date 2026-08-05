@@ -23,16 +23,12 @@ const OPTIONS = [
     bodyId: 'SellPage.newListingBody',
   },
   {
-    name: 'ManageListingsPage',
+    name: 'CurrentListingsPage',
     titleId: 'SellPage.currentListingsTitle',
     bodyId: 'SellPage.currentListingsBody',
   },
   {
-    // Sales and payouts live in the existing Inbox "sales" tab, which already lists every
-    // transaction where this user is the provider. Pointing at it beats building a second,
-    // divergent view of the same data.
-    name: 'InboxPage',
-    params: { tab: 'sales' },
+    name: 'SalesPage',
     titleId: 'SellPage.salesTitle',
     bodyId: 'SellPage.salesBody',
   },

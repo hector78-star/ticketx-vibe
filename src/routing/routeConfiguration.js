@@ -18,6 +18,9 @@ const CMSPage = loadable(() => import(/* webpackChunkName: "CMSPage" */ '../cont
 const ContactDetailsPage = loadable(() => import(/* webpackChunkName: "ContactDetailsPage" */ '../containers/ContactDetailsPage/ContactDetailsPage'));
 const EditListingPage = loadable(() => import(/* webpackChunkName: "EditListingPage" */ '../containers/EditListingPage/EditListingPage'));
 const AdminEventsPage = loadable(() => import(/* webpackChunkName: "AdminEventsPage" */ '../containers/AdminEventsPage/AdminEventsPage'));
+const CurrentListingsPage = loadable(() => import(/* webpackChunkName: "CurrentListingsPage" */ '../containers/SellPage/CurrentListingsPage'));
+const SalesPage = loadable(() => import(/* webpackChunkName: "SalesPage" */ '../containers/SellPage/SalesPage'));
+const MyTicketsPage = loadable(() => import(/* webpackChunkName: "MyTicketsPage" */ '../containers/MyTicketsPage/MyTicketsPage'));
 const SellPage = loadable(() => import(/* webpackChunkName: "SellPage" */ '../containers/SellPage/SellPage'));
 const EventsPage = loadable(() => import(/* webpackChunkName: "EventsPage" */ '../containers/EventsPage/EventsPage'));
 const EventPage = loadable(() => import(/* webpackChunkName: "EventPage" */ '../containers/EventPage/EventPage'));
@@ -113,6 +116,29 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       prioritizeLibraryLoading: {
         map: isSearchPageWithMap,
       },
+    },
+    {
+      path: '/sell/listings',
+      name: 'CurrentListingsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: CurrentListingsPage,
+      loadData: pageDataLoadingAPI.CurrentListingsPage.loadData,
+    },
+    {
+      path: '/sell/sales',
+      name: 'SalesPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: SalesPage,
+      loadData: pageDataLoadingAPI.SalesPage.loadData,
+    },
+    {
+      path: '/my-tickets',
+      name: 'MyTicketsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: MyTicketsPage,
     },
     {
       // TicketX: the seller hub - new listing, current listings, sales and payouts.

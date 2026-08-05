@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { formatMoney } from '../../util/currency';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
-import { computeSellerStats, saleProgress } from '../../util/sellerStats';
+import { computeSellerStats, saleProgress, isPaidTransaction } from '../../util/sellerStats';
 import { fetchSales } from './SellPage.duck';
 
 import { Page, LayoutSingleColumn, H1, NamedLink } from '../../components';
@@ -99,7 +99,9 @@ export const SalesPageComponent = () => {
       getMarketplaceEntities(
         { marketplaceData },
         (transactionIds || []).map(id => ({ id, type: 'transaction' }))
-      ),
+      )
+        // Only sales where a buyer actually paid. An abandoned checkout is not a sale.
+        .filter(isPaidTransaction),
     [marketplaceData, transactionIds]
   );
 

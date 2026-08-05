@@ -186,8 +186,16 @@ export const CurrentListingsPageComponent = () => {
       { marketplaceData },
       (listingIds || []).map(id => ({ id, type: 'ownListing' }))
     );
-    // Events are catalog entries the seller may have added, not things they are selling.
-    return all.filter(l => l?.attributes?.publicData?.listingType !== EVENT_LISTING_TYPE);
+    return all.filter(l => {
+      // Events are catalog entries the seller may have added, not things they are selling.
+      if (l?.attributes?.publicData?.listingType === EVENT_LISTING_TYPE) {
+        return false;
+      }
+      // Only what is still buyable. A fully sold listing has moved on to Sales and payouts, where
+      // it is tracked per sale; showing it here too would imply there is still something to sell.
+      const stock = l?.currentStock?.attributes?.quantity;
+      return typeof stock !== 'number' || stock > 0;
+    });
   }, [marketplaceData, listingIds]);
 
   useEffect(() => {

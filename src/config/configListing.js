@@ -70,6 +70,10 @@ export const OTHER_LISTING_TYPE = 'sell-other';
 // and friends) and any listings already using them keep working, but they are not offered.
 export const SELLER_LISTING_TYPES = [TICKET_LISTING_TYPE, OTHER_LISTING_TYPE];
 
+// Billing country pre-selected at checkout. The marketplace is closed to St Andrews students, so
+// a UK card is the overwhelming default; leaving it unset silently disables the pay button.
+export const DEFAULT_BILLING_COUNTRY = 'GB';
+
 export const listingFields = [
   // ---------------------------------------------------------------------------
   // Event fields. Admin-facing: these render as inputs when the admin account

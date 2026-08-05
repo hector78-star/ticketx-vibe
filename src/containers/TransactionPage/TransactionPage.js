@@ -74,6 +74,7 @@ import RequestChangesModal from './RequestChangesModal/RequestChangesModal';
 import MakeCounterOfferModal from './MakeCounterOfferModal/MakeCounterOfferModal';
 import SendMessageForm from './SendMessageForm/SendMessageForm';
 import TransactionPanel from './TransactionPanel/TransactionPanel';
+import { useEventImages } from '../../hooks/useEventImages';
 
 import {
   makeTransition,
@@ -383,6 +384,9 @@ export const TransactionPageComponent = props => {
   } = props;
 
   const { listing, provider, customer, booking, protectedFileAttachments } = transaction || {};
+
+  // Scoped to this transaction's listing, so the event catalog is only fetched for tickets.
+  const eventImages = useEventImages([listing]);
   const txTransitions = transaction?.attributes?.transitions || [];
   const isProviderRole = transactionRole === PROVIDER;
   const isCustomerRole = transactionRole === CUSTOMER;
@@ -840,6 +844,7 @@ export const TransactionPageComponent = props => {
   // that currently handles showing everything inside layout's main view area.
   const panel = isDataAvailable ? (
     <TransactionPanel
+      eventImages={eventImages}
       className={detailsClassName}
       currentUser={currentUser}
       transactionId={transaction?.id}

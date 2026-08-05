@@ -43,6 +43,7 @@ import MobileOrderBreakdown from './MobileOrderBreakdown';
 
 import css from './CheckoutPage.module.css';
 import { useEventImages, withEventImage } from '../../hooks/useEventImages';
+import { DEFAULT_BILLING_COUNTRY } from '../../config/configListing';
 
 // Stripe PaymentIntent statuses, where user actions are already completed
 // https://stripe.com/docs/payments/payment-intents/status
@@ -546,7 +547,17 @@ export const CheckoutPageWithPayment = props => {
   // If your marketplace works mostly in one country you can use initial values to select country automatically
   // e.g. {country: 'FI'}
 
-  const initialValuesForStripePayment = { name: userName, recipientName: userName };
+  // TicketX: pre-select the billing country.
+  //
+  // Country is a required billing field, but nothing on screen says so - an unset country simply
+  // leaves "Confirm and pay" disabled with no message, which reads as "I cannot buy anything".
+  // Everyone here is a St Andrews student paying with a UK card, so GB is the right default and
+  // the buyer can still change it.
+  const initialValuesForStripePayment = {
+    name: userName,
+    recipientName: userName,
+    country: DEFAULT_BILLING_COUNTRY,
+  };
   const askShippingDetails =
     orderData?.deliveryMethod === 'shipping' &&
     !hasTransactionPassedPendingPayment(existingTransaction, process);

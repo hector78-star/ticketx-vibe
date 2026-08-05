@@ -21,6 +21,7 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 
 import css from './TransactionPanel.module.css';
+import { withEventImage } from '../../../hooks/useEventImages';
 
 // Helper function to get display names for different roles
 const displayNames = (currentUser, provider, customer, intl) => {
@@ -163,7 +164,12 @@ export class TransactionPanelComponent extends Component {
     });
 
     const listingTitle = listingDeleted ? deletedListingTitle : listing?.attributes?.title;
-    const firstImage = listing?.images?.length > 0 ? listing?.images[0] : null;
+    // TicketX: tickets have no images of their own, so the order page borrows the curated event's
+    // photo - the same substitution used in browse, on the listing page and at checkout. This is a
+    // class component, so the lookup is passed in as a prop rather than read from a hook.
+    const listingWithEventImage = withEventImage(listing, this.props.eventImages);
+    const firstImage =
+      listingWithEventImage?.images?.length > 0 ? listingWithEventImage.images[0] : null;
 
     const listingType = listing?.attributes?.publicData?.listingType;
     const listingTypeConfigs = config.listing.listingTypes;

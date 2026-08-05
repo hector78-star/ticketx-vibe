@@ -21,6 +21,8 @@ import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
 
 import css from './TransactionPanel.module.css';
+import HandoverPanel from './HandoverPanel';
+import { PURCHASE_PROCESS_NAME } from '../../../transactions/transaction';
 import { withEventImage } from '../../../hooks/useEventImages';
 
 // Helper function to get display names for different roles
@@ -131,9 +133,19 @@ export class TransactionPanelComponent extends Component {
       hasViewingRights,
       transactionFieldsComponent,
       sendMessageForm,
+      onSendMessage,
+      transactionId,
+      ownWhatsappNumber,
     } = this.props;
 
     const hasTransitions = transitions.length > 0;
+    // Handover only makes sense once money has changed hands, and only for purchases.
+    const prePaymentStates = ['initial', 'inquiry', 'pending-payment', 'payment-expired'];
+    const showHandoverPanel =
+      processName === PURCHASE_PROCESS_NAME &&
+      !!stateData.processState &&
+      !prePaymentStates.includes(stateData.processState);
+
     const isCustomer = transactionRole === 'customer';
     const isProvider = transactionRole === 'provider';
 
@@ -283,6 +295,18 @@ export class TransactionPanelComponent extends Component {
                 />
               </div>
             ) : null}
+            {showHandoverPanel ? (
+              <HandoverPanel
+                isProvider={isProvider}
+                listing={listing}
+                provider={provider}
+                messages={messages}
+                ownWhatsappNumber={this.props.ownWhatsappNumber}
+                onSendMessage={onSendMessage}
+                transactionId={transactionId}
+              />
+            ) : null}
+
             <FeedSection
               rootClassName={css.feedContainer}
               hasMessages={messages.length > 0}

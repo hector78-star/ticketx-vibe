@@ -1,0 +1,64 @@
+.root {
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorGrey50);
+}
+
+.heading {
+  composes: h4 from global;
+  margin: 0 0 8px 0;
+  color: var(--colorGrey900);
+}
+
+.body {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 16px 0;
+  color: var(--colorGrey700);
+}
+
+.numberRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 12px 0;
+}
+
+.numberLabel {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+
+.number {
+  composes: h4 from global;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+.primaryButton {
+  composes: buttonPrimary from global;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-height: 44px;
+  padding: 0 24px;
+  text-decoration: none;
+}
+
+.primaryButton:hover {
+  text-decoration: none;
+}
+
+.note {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 12px 0 0 0;
+  color: var(--colorGrey500);
+}
+
+.shared {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorSuccess, #2ecc71);
+}

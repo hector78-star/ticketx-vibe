@@ -387,6 +387,13 @@ export const TransactionPageComponent = props => {
 
   // Scoped to this transaction's listing, so the event catalog is only fetched for tickets.
   const eventImages = useEventImages([listing]);
+
+  // The WhatsApp number lives in the listing's private data, which only its author can read - so
+  // this resolves to a value for the seller and to null for everyone else, by design.
+  const ownWhatsappNumber =
+    transactionRole === 'provider'
+      ? listing?.attributes?.privateData?.whatsappNumber || null
+      : null;
   const txTransitions = transaction?.attributes?.transitions || [];
   const isProviderRole = transactionRole === PROVIDER;
   const isCustomerRole = transactionRole === CUSTOMER;
@@ -845,6 +852,8 @@ export const TransactionPageComponent = props => {
   const panel = isDataAvailable ? (
     <TransactionPanel
       eventImages={eventImages}
+      onSendMessage={(txId, msg) => onSendMessage(txId, msg, config)}
+      ownWhatsappNumber={ownWhatsappNumber}
       className={detailsClassName}
       currentUser={currentUser}
       transactionId={transaction?.id}

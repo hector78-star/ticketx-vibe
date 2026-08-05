@@ -466,6 +466,9 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'publicData.shippingEnabled',
         'publicData.priceVariationsEnabled',
         'publicData.priceVariants',
+        // TicketX: needed so a ticket card can find its event and borrow that event's photo.
+        // Without it the field is simply absent and the substitution silently does nothing.
+        'publicData.eventId',
       ],
       'fields.user': ['profile.displayName', 'profile.abbreviatedName'],
       'fields.image': [

@@ -38,6 +38,46 @@ const fetchEventsPayloadCreator = async (arg, thunkAPI) => {
 
 export const fetchEvents = createAsyncThunk('events/fetchEvents', fetchEventsPayloadCreator);
 
+/**
+ * Let a seller add an event that is missing from the catalog.
+ *
+ * A missing event would otherwise dead-end the sale, so this publishes immediately. It is marked
+ * curated: false, which is what tells the admin Events tab it is a candidate to adopt - and what
+ * keeps "admin curates the catalog" true in substance even though sellers can contribute to it.
+ */
+export const createSellerEvent = createAsyncThunk(
+  'events/createSellerEvent',
+  async ({ values, config }, { extra: sdk, dispatch, rejectWithValue }) => {
+    try {
+      const response = await sdk.ownListings.create(
+        {
+          title: values.title,
+          description: values.title,
+          publicData: {
+            listingType: EVENT_LISTING_TYPE,
+            transactionProcessAlias: 'default-inquiry/release-1',
+            unitType: 'inquiry',
+            eventDate: values.eventDate,
+            eventTime: values.eventTime || null,
+            venue: values.venue,
+            // Sellers do not set pricing guidance - they have no basis for it and it would be
+            // their own asking price talking. Admin fills these in when adopting the event.
+            faceValue: null,
+            lastSoldPrice: null,
+            curated: false,
+          },
+        },
+        { expand: true, include: ['images'] }
+      );
+      dispatch(addMarketplaceEntities(response));
+      return { listing: response.data.data };
+    } catch (error) {
+      log.error(error, 'seller-event-create-failed');
+      return rejectWithValue(storableError(error));
+    }
+  }
+);
+
 const eventsSlice = createSlice({
   name: 'events',
   initialState: {
@@ -45,6 +85,8 @@ const eventsSlice = createSlice({
     fetched: false,
     inProgress: false,
     error: null,
+    creating: false,
+    createError: null,
   },
   reducers: {},
   extraReducers: builder => {
@@ -62,6 +104,19 @@ const eventsSlice = createSlice({
         state.inProgress = false;
         state.fetched = false;
         state.error = action.payload;
+      })
+      .addCase(createSellerEvent.pending, state => {
+        state.creating = true;
+        state.createError = null;
+      })
+      .addCase(createSellerEvent.fulfilled, (state, action) => {
+        state.creating = false;
+        // Put it at the top of the catalog so the seller sees what they just added.
+        state.listingIds = [action.payload.listing.id, ...state.listingIds];
+      })
+      .addCase(createSellerEvent.rejected, (state, action) => {
+        state.creating = false;
+        state.createError = action.payload;
       });
   },
 });

@@ -3,6 +3,7 @@ import classNames from 'classnames';
 
 import { propTypes } from '../../../util/types';
 import { ListingCard, PaginationLinks } from '../../../components';
+import { useEventImages, withEventImage } from '../../../hooks/useEventImages';
 
 import css from './SearchResultsPanel.module.css';
 
@@ -72,6 +73,9 @@ const SearchResultsPanel = props => {
     }
   };
 
+  // Tickets render the curated event's photo, not one of their own.
+  const eventImages = useEventImages(listings);
+
   return (
     <div className={classes}>
       <ul className={isMapVariant ? css.listingCardsMapVariant : css.listingCards}>
@@ -79,7 +83,7 @@ const SearchResultsPanel = props => {
           <li key={l.id.uuid} className={css.resultItem}>
             <ListingCard
               className={css.listingCard}
-              listing={l}
+              listing={withEventImage(l, eventImages)}
               renderSizes={cardRenderSizes(isMapVariant)}
               setActiveListing={setActiveListing}
             />

@@ -157,7 +157,90 @@ export const listingFields = [
     showConfig: { label: 'Event', isDetail: false },
     saveConfig: { label: 'Event' },
   },
+  {
+    // Mandatory. Drives which attestation the seller must give, and tells the buyer what they are
+    // getting - not how it is delivered, since handover is identical for all three.
+    key: 'ticketType',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: 'mobile-transfer', label: 'Mobile transfer' },
+      { option: 'pdf', label: 'Electronic (PDF)' },
+      { option: 'physical', label: 'Physical' },
+    ],
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: {
+      indexForSearch: false,
+      showFilter: false,
+      label: 'Ticket type',
+      filterType: 'SelectSingleFilter',
+    },
+    showConfig: { label: 'Ticket type', isDetail: true },
+    saveConfig: {
+      label: 'What kind of ticket is it?',
+      isRequired: true,
+      requiredMessage: 'Choose the kind of ticket you are selling.',
+    },
+  },
+  {
+    // Mobile transfer only: which provider the ticket lives on.
+    key: 'ticketPlatform',
+    scope: 'public',
+    schemaType: 'text',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Ticket platform' },
+    showConfig: { label: 'Transfers on', isDetail: true },
+    saveConfig: { label: 'Which platform is the ticket on?' },
+  },
+  {
+    key: 'transferabilityConfirmed',
+    scope: 'public',
+    schemaType: 'boolean',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Transferability confirmed' },
+    showConfig: { label: 'Seller confirmed transferable', isDetail: false },
+    saveConfig: { label: 'Transferability confirmed' },
+  },
+  {
+    key: 'pdfAttestationConfirmed',
+    scope: 'public',
+    schemaType: 'boolean',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'PDF attestation' },
+    showConfig: { label: 'Seller attested to PDF validity', isDetail: false },
+    saveConfig: { label: 'PDF attestation' },
+  },
+  {
+    key: 'physicalHandoverAcknowledged',
+    scope: 'public',
+    schemaType: 'boolean',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Handover acknowledged' },
+    showConfig: { label: 'Seller acknowledged handover', isDetail: false },
+    saveConfig: { label: 'Handover acknowledgement' },
+  },
+  {
+    // PRIVATE scope. Listing private data is readable only by the listing's author (and operator),
+    // never by other users, so putting the number here keeps it off the public listing. Revealing
+    // it to a buyer after purchase needs a server-side endpoint that checks for a paid transaction
+    // - see the note in EditListingTicketFields.js. Storing it publicly would expose every
+    // seller's phone number to anyone browsing, which is exactly what must not happen.
+    key: 'whatsappNumber',
+    scope: 'private',
+    schemaType: 'text',
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [TICKET_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'WhatsApp number' },
+    showConfig: { label: 'WhatsApp number', isDetail: false },
+    saveConfig: { label: 'Your WhatsApp number' },
+  },
 ];
+
+// Ticket type values. Handover is identical for all three - buyer and seller arrange it between
+// themselves in the message thread or over WhatsApp - so the type drives the attestations the
+// seller must give, not a delivery mechanism.
+export const TICKET_TYPE_MOBILE = 'mobile-transfer';
+export const TICKET_TYPE_PDF = 'pdf';
+export const TICKET_TYPE_PHYSICAL = 'physical';
 
 // Ticket fields that the event picker fills in from the chosen event. They are kept out of the
 // seller-facing form entirely: sellers choose an event, they do not retype its details.
@@ -167,6 +250,18 @@ export const AUTOFILLED_TICKET_FIELDS = [
   'eventDate',
   'eventTime',
   'venue',
+];
+
+// Ticket fields rendered by EditListingTicketFields rather than the generic renderer, because they
+// branch on the chosen ticket type: a seller should only be asked to attest to the thing they are
+// actually selling.
+export const BRANCHED_TICKET_FIELDS = [
+  'ticketType',
+  'ticketPlatform',
+  'transferabilityConfirmed',
+  'pdfAttestationConfirmed',
+  'physicalHandoverAcknowledged',
+  'whatsappNumber',
 ];
 
 // Reference: the listing field shapes shipped with the template, kept as documentation.

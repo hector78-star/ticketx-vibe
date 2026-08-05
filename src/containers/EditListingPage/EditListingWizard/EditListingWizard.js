@@ -63,6 +63,8 @@ import EditListingWizardTab, {
 } from './EditListingWizardTab';
 import css from './EditListingWizard.module.css';
 
+import { TICKET_LISTING_TYPE } from '../../../config/configListing';
+
 // This is the initial tab on editlisting wizard.
 // When listing type is known, other tabs are checked from _tabsForListingType_ function.
 const TABS_DETAILS_ONLY = [DETAILS];
@@ -87,11 +89,23 @@ const STRIPE_ONBOARDING_RETURN_URL_FAILURE = 'failure';
 const tabsForListingType = (processName, listingTypeConfig) => {
   const locationMaybe = displayLocation(listingTypeConfig) ? [LOCATION] : [];
   const pricingMaybe = displayPrice(listingTypeConfig) ? [PRICING] : [];
+  // Tickets are transferred, not posted, so the shipping/pickup step is skipped regardless of what
+  // the hosted listing type says about delivery.
+  const isTicketType = listingTypeConfig?.listingType === TICKET_LISTING_TYPE;
   const deliveryMaybe =
-    displayDeliveryPickup(listingTypeConfig) || displayDeliveryShipping(listingTypeConfig)
+    !isTicketType &&
+    (displayDeliveryPickup(listingTypeConfig) || displayDeliveryShipping(listingTypeConfig))
       ? [DELIVERY]
       : [];
-  const styleOrPhotosTab = requireListingImage(listingTypeConfig) ? [PHOTOS] : [STYLE];
+  // TicketX: a ticket inherits the curated event's photo, so sellers get no photo step - letting
+  // each seller attach their own would make the same event look different on every listing. They
+  // get no style step either: card appearance follows the event, not the seller's choice.
+  const isTicketListing = listingTypeConfig?.listingType === TICKET_LISTING_TYPE;
+  const styleOrPhotosTab = isTicketListing
+    ? []
+    : requireListingImage(listingTypeConfig)
+    ? [PHOTOS]
+    : [STYLE];
 
   // You can reorder these panels.
   // Note 1: You need to change save button translations for new listing flow

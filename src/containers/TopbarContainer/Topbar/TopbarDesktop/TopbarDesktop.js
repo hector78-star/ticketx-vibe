@@ -19,6 +19,8 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
 
+import { ADMIN_USER_ID } from '../../../../util/events';
+
 const SignupLink = () => {
   return (
     <NamedLink id="signup-link" name="SignupPage" className={css.topbarLink}>
@@ -57,6 +59,10 @@ const InboxLink = ({ notificationCount, inboxTab }) => {
 };
 
 const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLink, intl }) => {
+  // TicketX: the Events tab is curation, so it is shown only to the curating account. The route
+  // itself also 404s for anyone else - this just keeps it out of everyone else's menu.
+  const isEventCurator = !!ADMIN_USER_ID && currentUser?.id?.uuid === ADMIN_USER_ID;
+
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
@@ -82,6 +88,17 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout, showManageListingsLin
             >
               <span className={css.menuItemBorder} />
               <FormattedMessage id="TopbarDesktop.yourListingsLink" />
+            </NamedLink>
+          </MenuItem>
+        ) : null}
+        {isEventCurator ? (
+          <MenuItem key="AdminEventsPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('AdminEventsPage'))}
+              name="AdminEventsPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.adminEvents" />
             </NamedLink>
           </MenuItem>
         ) : null}

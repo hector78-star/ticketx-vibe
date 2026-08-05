@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(~/.claude/skills/gstack/bin/gstack-config get *)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-update-check)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-session-kind)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-repo-mode)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-slug)",
+      "mcp__claude_ai_Google_Drive__read_file_content",
+      "mcp__claude_ai_Google_Drive__search_files"
+    ]
+  }
+}

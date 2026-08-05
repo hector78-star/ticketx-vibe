@@ -17,6 +17,7 @@ const CheckoutPage = loadable(() => import(/* webpackChunkName: "CheckoutPage" *
 const CMSPage = loadable(() => import(/* webpackChunkName: "CMSPage" */ '../containers/CMSPage/CMSPage'));
 const ContactDetailsPage = loadable(() => import(/* webpackChunkName: "ContactDetailsPage" */ '../containers/ContactDetailsPage/ContactDetailsPage'));
 const EditListingPage = loadable(() => import(/* webpackChunkName: "EditListingPage" */ '../containers/EditListingPage/EditListingPage'));
+const AdminEventsPage = loadable(() => import(/* webpackChunkName: "AdminEventsPage" */ '../containers/AdminEventsPage/AdminEventsPage'));
 const EventsPage = loadable(() => import(/* webpackChunkName: "EventsPage" */ '../containers/EventsPage/EventsPage'));
 const EventPage = loadable(() => import(/* webpackChunkName: "EventPage" */ '../containers/EventPage/EventPage'));
 const EmailVerificationPage = loadable(() => import(/* webpackChunkName: "EmailVerificationPage" */ '../containers/EmailVerificationPage/EmailVerificationPage'));
@@ -111,6 +112,15 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       prioritizeLibraryLoading: {
         map: isSearchPageWithMap,
       },
+    },
+    {
+      // TicketX: admin-only curation of the event catalog.
+      path: '/admin/events',
+      name: 'AdminEventsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: AdminEventsPage,
+      loadData: pageDataLoadingAPI.AdminEventsPage.loadData,
     },
     {
       // TicketX: browse events, then drill into one to see its tickets.

@@ -16,6 +16,7 @@ import { loadData as PaymentMethodsPageLoader } from './PaymentMethodsPage/Payme
 import { loadData as PrivacyPolicyPageLoader } from './PrivacyPolicyPage/PrivacyPolicyPage.duck';
 import { loadData as ProfilePageLoader } from './ProfilePage/ProfilePage.duck';
 import { loadData as RequestQuotePageLoader } from './RequestQuotePage/RequestQuotePage.duck';
+import { loadData as AdminEventsPageLoader } from './AdminEventsPage/AdminEventsPage.duck';
 import { loadData as EventPageLoader } from './EventPage/EventPage.duck';
 import { loadData as SearchPageLoader } from './SearchPage/SearchPage.duck';
 import { loadData as StripePayoutPageLoader } from './StripePayoutPage/StripePayoutPage.duck';
@@ -71,6 +72,9 @@ const getPageDataLoadingAPI = () => {
     },
     RequestQuotePage: {
       loadData: RequestQuotePageLoader,
+    },
+    AdminEventsPage: {
+      loadData: AdminEventsPageLoader,
     },
     EventPage: {
       loadData: EventPageLoader,

@@ -43,6 +43,8 @@ import SubmitFinePrint from './SubmitFinePrint/SubmitFinePrint';
 
 import css from './OrderPanel.module.css';
 
+import { TICKET_LISTING_TYPE } from '../../config/configListing';
+
 const BookingTimeForm = loadable(() =>
   import(/* webpackChunkName: "BookingTimeForm" */ './BookingTimeForm/BookingTimeForm')
 );
@@ -371,8 +373,15 @@ const OrderPanel = props => {
   const { pickupEnabled, shippingEnabled } = listing?.attributes?.publicData || {};
 
   const listingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
-  const displayShipping = displayDeliveryShipping(listingTypeConfig);
-  const displayPickup = displayDeliveryPickup(listingTypeConfig);
+  // TicketX: handover is identical for every ticket type - buyer and seller arrange it between
+  // themselves in the message thread or over WhatsApp - so there is no delivery method to choose.
+  // Suppressing the selector matters for more than tidiness: ProductOrderForm renders
+  // "noDeliveryMethodSet" and hides the buy button whenever a delivery method is expected but the
+  // listing has neither pickup nor shipping set, which is exactly the state ticket listings are in
+  // now that the delivery step has been removed from the wizard.
+  const isTicketListing = listingType === TICKET_LISTING_TYPE;
+  const displayShipping = !isTicketListing && displayDeliveryShipping(listingTypeConfig);
+  const displayPickup = !isTicketListing && displayDeliveryPickup(listingTypeConfig);
   const allowOrdersOfMultipleItems = [STOCK_MULTIPLE_ITEMS, STOCK_INFINITE_MULTIPLE_ITEMS].includes(
     listingTypeConfig?.stockType
   );

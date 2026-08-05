@@ -26,10 +26,12 @@ import {
 } from '../../../../components';
 // Import modules from this directory
 import EventPicker from './EventPicker';
+import EditListingTicketFields from './EditListingTicketFields';
 import css from './EditListingDetailsForm.module.css';
 
 import {
   AUTOFILLED_TICKET_FIELDS,
+  BRANCHED_TICKET_FIELDS,
   TICKET_LISTING_TYPE,
 } from '../../../../config/configListing';
 
@@ -266,12 +268,16 @@ const AddListingFields = props => {
     // free-text box for details they are supposed to be choosing, not typing.
     const isAutofilledByEventPicker =
       listingType === TICKET_LISTING_TYPE && AUTOFILLED_TICKET_FIELDS.includes(key);
+    // Rendered by EditListingTicketFields instead, which branches on the chosen ticket type.
+    const isBranchedTicketField =
+      listingType === TICKET_LISTING_TYPE && BRANCHED_TICKET_FIELDS.includes(key);
 
     return isKnownSchemaType &&
       isProviderScope &&
       isTargetListingType &&
       isTargetCategory &&
-      !isAutofilledByEventPicker
+      !isAutofilledByEventPicker &&
+      !isBranchedTicketField
       ? [
           ...pickedFields,
           <CustomExtendedDataField
@@ -439,6 +445,10 @@ const EditListingDetailsForm = props => (
           )}
 
           {isTicketListing && isCompatibleCurrency && <EventPicker formId={formId} />}
+
+          {isTicketListing && isCompatibleCurrency && (
+            <EditListingTicketFields formId={formId} />
+          )}
 
           {showTitle && isCompatibleCurrency && !isTicketListing && (
             <FieldTextInput

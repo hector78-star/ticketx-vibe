@@ -61,3 +61,165 @@
   margin: 0 0 24px 0;
   color: var(--colorFail);
 }
+
+.searchLabel {
+  composes: marketplaceTinyFontStyles from global;
+  display: block;
+  margin-bottom: 4px;
+  color: var(--colorGrey700);
+}
+
+.searchInput {
+  composes: marketplaceBodyFontStyles from global;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: var(--borderRadiusMedium, 6px);
+  background-color: var(--colorWhite);
+}
+
+.searchInput:focus {
+  border-color: var(--marketplaceColor);
+  outline: none;
+}
+
+.suggestions {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 6px);
+  overflow: hidden;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background-color: var(--colorGrey50);
+}
+
+.suggestionTitle {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey900);
+}
+
+.suggestionMeta {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+
+.noMatches {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 8px 0 0 0;
+  color: var(--colorGrey500);
+}
+
+.linkButton {
+  composes: marketplaceTinyFontStyles from global;
+  display: inline-block;
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--marketplaceColor);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.selected {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: var(--borderRadiusMedium, 8px);
+}
+
+.selectedTitle {
+  composes: h4 from global;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+.selectedMeta {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey500);
+}
+
+.createBox {
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorGrey50);
+}
+
+.createHeading {
+  composes: h5 from global;
+  margin: 0 0 4px 0;
+}
+
+.createBody {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 12px 0;
+  color: var(--colorGrey500);
+}
+
+.newField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.newFieldRow {
+  display: flex;
+  gap: 12px;
+}
+
+.newFieldRow > .newField {
+  flex: 1;
+}
+
+.newFieldLabel {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+
+.newInput {
+  composes: marketplaceBodyFontStyles from global;
+  padding: 8px 12px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: var(--borderRadiusMedium, 6px);
+  background-color: var(--colorWhite);
+}
+
+.datePreview {
+  composes: marketplaceTinyFontStyles from global;
+  margin: -6px 0 12px 0;
+  color: var(--colorGrey500);
+}
+
+.createActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.createButton {
+  min-height: 40px;
+  width: auto;
+  padding: 0 20px;
+}

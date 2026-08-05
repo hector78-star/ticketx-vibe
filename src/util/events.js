@@ -9,13 +9,14 @@ import { createImageVariantConfig } from './sdkLoader';
 import { EVENT_LISTING_TYPE, TICKET_LISTING_TYPE } from '../config/configListing';
 
 /**
- * The account allowed to curate events.
+ * The curating account.
  *
- * Sharetribe's Marketplace API authorises as the logged-in user, so there is no server-side way to
- * stop a determined user from POSTing a listing with listingType 'event'. Filtering every catalog
- * read by this author id is what makes the restriction real: an event created by anyone else is
- * never returned here, so it never appears in browse, on an event page, or in a seller's picker.
- * It exists, but it is inert.
+ * Admin curates the catalog, but sellers may also add an event on the fly when theirs is missing -
+ * a missing event would otherwise block a sale entirely. Seller-created events go live immediately
+ * and are flagged (publicData.curated === false) so admin can adopt or tidy them later.
+ *
+ * This id therefore no longer gates what the catalog returns. It gates the admin Events tab and
+ * marks which events are admin-curated.
  */
 export const ADMIN_USER_ID = process.env.REACT_APP_ADMIN_USER_ID;
 
@@ -32,13 +33,26 @@ const EVENT_FIELDS = [
   'publicData.venue',
   'publicData.faceValue',
   'publicData.lastSoldPrice',
+  'publicData.curated',
 ];
 
+// Event images are reused wherever a ticket is rendered, including the listing page's gallery, so
+// they must be fetched with the same variants a listing would be. Requesting only the card
+// variants leaves the gallery with no variant it can render and the image breaks.
 const imageParams = (config, variantPrefix = 'listing-card') => {
   const { aspectWidth = 1, aspectHeight = 1 } = config?.layout?.listingImage || {};
   const aspectRatio = aspectHeight / aspectWidth;
   return {
-    'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],
+    'fields.image': [
+      // Scaled variants, used by the listing page gallery
+      'variants.scaled-small',
+      'variants.scaled-medium',
+      'variants.scaled-large',
+      'variants.scaled-xlarge',
+      // Cropped variants, used by listing cards
+      `variants.${variantPrefix}`,
+      `variants.${variantPrefix}-2x`,
+    ],
     ...createImageVariantConfig(`${variantPrefix}`, 400, aspectRatio),
     ...createImageVariantConfig(`${variantPrefix}-2x`, 800, aspectRatio),
     'limit.images': 1,
@@ -48,20 +62,13 @@ const imageParams = (config, variantPrefix = 'listing-card') => {
 /**
  * Query the curated event catalog.
  *
- * pub_listingType and authorId are both filters Sharetribe indexes by default, so this needs no
- * custom search schema.
+ * pub_listingType is indexed by Sharetribe by default, so this needs no custom search schema.
+ * Both admin-curated and seller-created events are returned - a seller must be able to find an
+ * event another seller just added.
  */
 export const queryEvents = (sdk, config, params = {}) => {
-  if (!hasAdminConfigured()) {
-    return Promise.reject(
-      new Error(
-        'REACT_APP_ADMIN_USER_ID is not set. Events cannot be listed until the curating account is configured.'
-      )
-    );
-  }
   return sdk.listings.query({
     pub_listingType: EVENT_LISTING_TYPE,
-    authorId: ADMIN_USER_ID,
     include: ['images'],
     'fields.listing': EVENT_FIELDS,
     ...imageParams(config),
@@ -183,5 +190,8 @@ export const eventSummary = listing => {
     venue: pd.venue,
     faceValue: pd.faceValue,
     lastSoldPrice: pd.lastSoldPrice,
+    // false for events a seller added on the fly; admin can adopt them later.
+    curated: pd.curated !== false,
+    authorId: listing.author?.id?.uuid,
   };
 };

@@ -73,7 +73,9 @@ export const EventPageComponent = () => {
         <ListingCard
           key={listing.id.uuid}
           className={css.ticketCard}
-          listing={listing}
+          // Tickets borrow the curated event's photo. Here the event is already loaded, so the
+          // substitution is direct rather than going through useEventImages.
+          listing={eventListing?.images?.length ? { ...listing, images: eventListing.images } : listing}
           showAuthorInfo={true}
         />
       ))}

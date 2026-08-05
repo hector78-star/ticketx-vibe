@@ -296,6 +296,8 @@ const getSearchParams = config => {
       'publicData.shippingEnabled',
       'publicData.priceVariationsEnabled',
       'publicData.priceVariants',
+      // TicketX: lets a ticket card resolve its event and borrow that event's photo.
+      'publicData.eventId',
     ],
     'fields.user': ['profile.displayName', 'profile.abbreviatedName'],
     'fields.image': [

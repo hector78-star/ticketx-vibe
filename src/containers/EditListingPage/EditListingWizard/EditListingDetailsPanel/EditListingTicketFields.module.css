@@ -1,0 +1,43 @@
+.root {
+  margin-bottom: 24px;
+}
+
+.field {
+  margin-bottom: 20px;
+}
+
+.attestation {
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorGrey50);
+}
+
+.attestationHeading {
+  composes: h5 from global;
+  margin: 0 0 8px 0;
+  color: var(--colorGrey900);
+}
+
+.attestationBody {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 12px 0;
+  color: var(--colorGrey700);
+  white-space: pre-line;
+}
+
+.privacyNote {
+  composes: marketplaceTinyFontStyles from global;
+  margin: -12px 0 20px 0;
+  color: var(--colorGrey500);
+}
+
+.handoverNote {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorGrey50);
+  color: var(--colorGrey700);
+}

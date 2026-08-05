@@ -57,6 +57,7 @@ import CustomListingFields from './CustomListingFields';
 import ListingPageAccessWrapper from './ListingPageAccessWrapper';
 
 import css from './ListingPage.module.css';
+import { useEventImages, withEventImage } from '../../hooks/useEventImages';
 
 const MIN_LENGTH_FOR_LONG_WORDS_IN_TITLE = 16;
 
@@ -141,6 +142,9 @@ export const ListingPageComponent = props => {
     noIndexMaybe,
     hasInvalidListingData,
   } = derivedData;
+
+  // Tickets show the curated event's photo rather than one of their own.
+  const eventImages = useEventImages([currentListing]);
 
   const topbar = <TopbarContainer />;
 
@@ -254,7 +258,7 @@ export const ListingPageComponent = props => {
             />
             {showListingImage && (
               <SectionGallery
-                listing={currentListing}
+                listing={withEventImage(currentListing, eventImages)}
                 variantPrefix={config.layout.listingImage.variantPrefix}
               />
             )}

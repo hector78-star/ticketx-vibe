@@ -37,12 +37,11 @@ import {
 import { getErrorMessages } from './ErrorMessages';
 
 import StripePaymentForm from './StripePaymentForm/StripePaymentForm';
-import DetailsSideCard from './DetailsSideCard';
-import MobileListingImage from './MobileListingImage';
-import MobileOrderBreakdown from './MobileOrderBreakdown';
+import OrderReceipt from './OrderReceipt';
 
 import css from './CheckoutPage.module.css';
 import { useEventImages, withEventImage } from '../../hooks/useEventImages';
+import { useTicketEvent } from '../../hooks/useTicketEvent';
 import { DEFAULT_BILLING_COUNTRY } from '../../config/configListing';
 
 // Stripe PaymentIntent statuses, where user actions are already completed
@@ -570,6 +569,11 @@ export const CheckoutPageWithPayment = props => {
     ? existingTransaction?.provider?.attributes?.profile?.displayName
     : listing?.author?.attributes?.profile?.displayName;
 
+  // Tickets carry only publicData.eventId, so the receipt's Event / Date / Venue rows resolve the
+  // event through the cached catalog. Returns null for anything that is not a ticket, and the
+  // receipt drops those rows rather than rendering blanks.
+  const ticketEvent = useTicketEvent(listing);
+
   // Check if the listing currency is compatible with Stripe for the specified transaction process.
   // This function validates the currency against the transaction process requirements and
   // ensures it is supported by Stripe, as indicated by the 'stripe' parameter.
@@ -602,28 +606,23 @@ export const CheckoutPageWithPayment = props => {
   return (
     <Page title={title} scrollingDisabled={scrollingDisabled}>
       <TopbarSimplified />
-      <div className={css.contentContainer}>
-        <MobileListingImage
-          listingTitle={listingTitle}
-          author={listing?.author}
-          firstImage={firstImage}
-          layoutListingImageConfig={config.layout.listingImage}
-          showListingImage={showListingImage}
-        />
-        <main className={css.orderFormContainer}>
-          <div className={css.headingContainer}>
-            <H3 as="h1" className={css.heading}>
-              {title}
-            </H3>
-            <H4 as="h2" className={css.detailsHeadingMobile}>
-              <FormattedMessage id="CheckoutPage.listingTitle" values={{ listingTitle }} />
-            </H4>
-          </div>
-          <MobileOrderBreakdown
-            speculateTransactionErrorMessage={errorMessages.speculateTransactionErrorMessage}
+      {/* One narrow centred column, per the approved checkout direction. The stock layout put the
+          order in a desktop side card and duplicated it as a mobile breakdown; the receipt reads
+          the same at every width, so both the split and the duplication are gone. */}
+      <div className={css.receiptContainer}>
+        <main className={css.receiptColumn}>
+          <OrderReceipt
+            title={title}
             breakdown={breakdown}
-            priceVariantName={priceVariantName}
+            breakdownTitle={intl.formatMessage({
+              id: `CheckoutPage.${processName}.orderBreakdown`,
+            })}
+            listing={listing}
+            event={ticketEvent}
+            providerName={providerDisplayName}
+            totalPriceFormatted={totalPrice}
           />
+
           <section className={css.paymentContainer}>
             {errorMessages.initiateOrderErrorMessage}
             {errorMessages.listingNotFoundErrorMessage}
@@ -673,21 +672,6 @@ export const CheckoutPageWithPayment = props => {
             ) : null}
           </section>
         </main>
-
-        <DetailsSideCard
-          listing={listing}
-          listingTitle={listingTitle}
-          priceVariantName={priceVariantName}
-          author={listing?.author}
-          firstImage={firstImage}
-          layoutListingImageConfig={config.layout.listingImage}
-          speculateTransactionErrorMessage={errorMessages.speculateTransactionErrorMessage}
-          isInquiryProcess={false}
-          processName={processName}
-          breakdown={breakdown}
-          showListingImage={showListingImage}
-          intl={intl}
-        />
       </div>
     </Page>
   );

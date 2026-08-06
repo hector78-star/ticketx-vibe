@@ -470,3 +470,33 @@
 .spinner {
   margin: auto;
 }
+
+/* ============================================================
+   Approved checkout: one narrow centred column
+   ============================================================
+   Replaces the stock split, where the order lived in a desktop side card and was duplicated as a
+   separate mobile breakdown. The receipt reads identically at every width, so neither the split nor
+   the duplication is needed. Mobile-first: this is the base layout, and wide screens only get more
+   breathing room. */
+
+.receiptContainer {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  padding: 24px 20px 64px 20px;
+}
+
+@media (min-width: 768px) {
+  .receiptContainer {
+    padding: 56px 24px 96px 24px;
+  }
+}
+
+.receiptColumn {
+  width: 100%;
+  /* Narrow on purpose. A receipt is read down, not across, and a wide measure makes the
+     label/value pairing hard to track. */
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+}

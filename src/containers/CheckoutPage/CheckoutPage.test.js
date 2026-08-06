@@ -143,10 +143,12 @@ describe('CheckoutPage', () => {
     expect(screen.getByRole('heading', { name: purchaseTitle })).toBeInTheDocument();
     const orderBreakdownTitle = 'CheckoutPage.default-purchase.orderBreakdown';
     expect(screen.getByRole('heading', { name: orderBreakdownTitle })).toBeInTheDocument();
-    // These are rendered twice (mobile & desktop)
-    expect(screen.getAllByText('OrderBreakdown.baseUnitQuantity')).toHaveLength(2);
-    expect(screen.getAllByText('OrderBreakdown.shippingFee')).toHaveLength(2);
-    expect(screen.getAllByText('OrderBreakdown.total')).toHaveLength(2);
+    // Once, not twice. The stock layout rendered the breakdown in a desktop side card AND
+    // again as a separate mobile block; the checkout is now a single column that reads the
+    // same at every width, so the duplication is gone.
+    expect(screen.getAllByText('OrderBreakdown.baseUnitQuantity')).toHaveLength(1);
+    expect(screen.getAllByText('OrderBreakdown.shippingFee')).toHaveLength(1);
+    expect(screen.getAllByText('OrderBreakdown.total')).toHaveLength(1);
 
     const getTextbox = name => screen.getByRole('textbox', { name });
 
@@ -207,10 +209,12 @@ describe('CheckoutPage', () => {
     const orderBreakdownTitle = 'CheckoutPage.default-booking.orderBreakdown';
     expect(screen.getByRole('heading', { name: orderBreakdownTitle })).toBeInTheDocument();
 
-    // These are rendered twice (mobile & desktop)
-    expect(screen.getAllByText('OrderBreakdown.baseUnitQuantity')).toHaveLength(2);
+    // Once, not twice. The stock layout rendered the breakdown in a desktop side card AND
+    // again as a separate mobile block; the checkout is now a single column that reads the
+    // same at every width, so the duplication is gone.
+    expect(screen.getAllByText('OrderBreakdown.baseUnitQuantity')).toHaveLength(1);
     expect(screen.queryAllByText('OrderBreakdown.shippingFee')).toHaveLength(0);
-    expect(screen.getAllByText('OrderBreakdown.total')).toHaveLength(2);
+    expect(screen.getAllByText('OrderBreakdown.total')).toHaveLength(1);
 
     const getTextbox = name => screen.getByRole('textbox', { name });
 
@@ -294,7 +298,9 @@ describe('CheckoutPage', () => {
     const orderBreakdownTitle = 'CheckoutPage.default-inquiry.orderBreakdown';
     expect(screen.queryByRole('heading', { name: orderBreakdownTitle })).not.toBeInTheDocument();
 
-    // These are rendered twice (mobile & desktop)
+    // Once, not twice. The stock layout rendered the breakdown in a desktop side card AND
+    // again as a separate mobile block; the checkout is now a single column that reads the
+    // same at every width, so the duplication is gone.
     expect(screen.queryAllByText('OrderBreakdown.baseUnitQuantity')).toHaveLength(0);
     expect(screen.queryAllByText('OrderBreakdown.shippingFee')).toHaveLength(0);
     expect(screen.queryAllByText('OrderBreakdown.total')).toHaveLength(0);

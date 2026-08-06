@@ -1,0 +1,221 @@
+/* The order as one continuous receipt. Mobile-first: every mockup in the exploration was 1440px
+   desktop, and this audience buys on a phone, so the narrow layout is the base and the wide screen
+   is the enhancement. */
+
+.root {
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 28px 0;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 38px;
+    letter-spacing: -0.025em;
+    margin-bottom: 36px;
+  }
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+/* Narrow screens stack label above value. Forcing label-left/value-right at 390px squeezes a venue
+   like "Lower College Lawn" into a two-word-per-line column - the layout that looks orderly on a
+   desktop mockup is the one that shreds on a phone. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+@media (min-width: 600px) {
+  .row {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+.label {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey600);
+  letter-spacing: 0.04em;
+  flex: none;
+}
+
+.value {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey900);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (min-width: 600px) {
+  .value {
+    justify-content: flex-end;
+    text-align: right;
+  }
+}
+
+/* ---------- seller ---------- */
+
+.sellerName {
+  font-weight: var(--fontWeightSemiBold);
+}
+
+.verified,
+.unverified {
+  composes: marketplaceTinyFontStyles from global;
+  border-radius: 100px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.verified {
+  color: #1e7a45;
+  background-color: #e6f5ec;
+  font-weight: var(--fontWeightSemiBold);
+}
+
+/* Neutral. Most sellers here are new rather than suspect, and this is the wrong moment to imply
+   otherwise. */
+.unverified {
+  color: var(--colorGrey600);
+  background-color: var(--colorGrey50);
+}
+
+.sellerStats {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey600);
+  white-space: nowrap;
+}
+
+/* ---------- the journey ---------- */
+
+.journey {
+  list-style: none;
+  margin: 0;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.step,
+.stepCurrent {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.step:last-child,
+.stepCurrent:last-child {
+  padding-bottom: 0;
+}
+
+/* The connector between the numerals. Drawn from the mark downwards and suppressed on the last
+   step so the line does not dangle. */
+.step:not(:last-child)::before,
+.stepCurrent:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 28px;
+  bottom: 8px;
+  width: 1px;
+  background-color: var(--colorGrey100);
+}
+
+.stepMark {
+  flex: none;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  border: 1px solid var(--colorGrey300);
+  color: var(--colorGrey600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  background-color: var(--colorWhite);
+}
+
+.stepCurrent .stepMark {
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepTitle {
+  composes: marketplaceBodyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey900);
+  line-height: 1.35;
+}
+
+.stepDetail {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey600);
+  line-height: 1.5;
+}
+
+/* ---------- total ---------- */
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.totalLabel {
+  composes: marketplaceTinyFontStyles from global;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--colorGrey600);
+}
+
+/* Money is set in Inter, NOT the display serif.
+   Instrument Serif's pound sign overlaps the digit after it - "£70.00" renders as a collision - and
+   it does so at every setting: letter-spacing 0, positive tracking, font-kerning:none and
+   feature-settings "kern" 0 were all tested and all collide. It is the glyph, not the spacing.
+   This is a sterling marketplace, so the display face can never carry a price. */
+.totalValue {
+  font-family: var(--fontFamily);
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 28px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--colorGrey900);
+}
+
+@media (min-width: 768px) {
+  .totalValue {
+    font-size: 32px;
+  }
+}

@@ -36,9 +36,11 @@ const Door = props => {
     >
       <span className={css.doorIndex}>{index}</span>
       <span className={css.doorInner}>
-        <span className={css.doorTitle}>
+        {/* h2, not a span. The two doors are the page's real section headings, and marking them up
+            as text left the document outline starting at the how-it-works heading. */}
+        <h2 className={css.doorTitle}>
           <FormattedMessage id={`HomePage.${variant}.title`} />
-        </span>
+        </h2>
         <span className={css.doorLead}>
           <FormattedMessage id={`HomePage.${variant}.lead`} />
         </span>
@@ -52,6 +54,19 @@ const Door = props => {
     </NamedLink>
   );
 };
+
+/**
+ * The page's h1.
+ *
+ * Visually hidden because the design's first line is deliberately the word "Buy" at 132px, not a
+ * sentence. But a page with no h1 has no name: the outline started at the doors, and anyone
+ * arriving by screen reader or search engine got no statement of what this site is.
+ */
+const PageTitle = () => (
+  <h1 className={css.visuallyHiddenTitle}>
+    <FormattedMessage id="HomePage.h1" />
+  </h1>
+);
 
 /**
  * One step of the payment flow, tilted away from the reader until it scrolls into view.
@@ -112,6 +127,8 @@ export const HomePageComponent = () => {
         footer={<FooterContainer />}
         mainColumnClassName={css.main}
       >
+        <PageTitle />
+
         <section className={css.split}>
           <Door variant="buy" index="01" linkName="BuyPage" />
           <Door variant="sell" index="02" linkName="NewListingPage" />

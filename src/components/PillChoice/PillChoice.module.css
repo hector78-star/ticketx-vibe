@@ -1,0 +1,137 @@
+.root {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.legend {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  padding: 0;
+  margin: 0 0 8px 0;
+}
+
+@media (min-width: 768px) {
+  .legend {
+    font-size: 32px;
+    letter-spacing: -0.025em;
+  }
+}
+
+.hint {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 24px 0;
+  color: var(--colorGrey700);
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+/* MOBILE FIRST: stacked full-width rows.
+   A row of pills wraps into ragged fragments on a phone, and this audience is mobile-heavy, so the
+   narrow layout is the default rather than an afterthought bolted on at the end. */
+.pills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 600px) {
+  .pills {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+.pill {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  /* Capsule. The one place the system allows a full radius - everything else stays hairline. */
+  border-radius: 100px;
+  border: 1px solid var(--colorGrey300);
+  background-color: var(--colorWhite);
+  color: var(--colorGrey900);
+  /* Comfortably past the 44px touch minimum. */
+  min-height: 52px;
+  padding: 14px 22px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+@media (min-width: 600px) {
+  .pill {
+    /* Only once there is room for a row does the pill shrink to its content. */
+    flex: 0 0 auto;
+  }
+}
+
+.pill:hover {
+  border-color: var(--colorGrey600);
+}
+
+/* Selected reads as a purple OUTLINE, not a fill. The solid-fill version was generated, shown and
+   rejected: at full width it shouted louder than anything else in the product. */
+.pillSelected {
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+.pillSelected:hover {
+  border-color: var(--marketplaceColor);
+}
+
+/* The beat between tapping and the flow moving on. Long enough to see, short enough not to feel
+   like waiting. A faint tint only - if this were a fill it would be the rejected design. */
+.pillFlashing {
+  background-color: #f3efff;
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+/* Visually hidden but focusable: keyboard behaviour stays the browser's own. */
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.pillLabel {
+  composes: marketplaceBodyFontStyles from global;
+  font-size: 16px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.pillHint {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey600);
+  margin-left: auto;
+}
+
+/* The focus ring lands on the label because the real input is hidden. Never remove it: this is the
+   only way a keyboard user can see where they are. */
+.input:focus-visible + .pillLabel {
+  outline: 2px solid var(--marketplaceColor);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.error {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorFail);
+  margin: 12px 0 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+}

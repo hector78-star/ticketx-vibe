@@ -134,6 +134,7 @@ export { default as OrderPanel } from './OrderPanel/OrderPanel';
 export { default as ListingCard } from './ListingCard/ListingCard';
 export { default as TicketCard } from './TicketCard/TicketCard';
 export { default as SellerReputation } from './SellerReputation/SellerReputation';
+export { default as PillChoice } from './PillChoice/PillChoice';
 export { default as Map } from './Map/Map';
 export { default as Page } from './Page/Page';
 export { default as Reviews } from './Reviews/Reviews';

@@ -3,7 +3,7 @@ import { useFormState } from 'react-final-form';
 
 import { FormattedMessage, useIntl } from '../../../../util/reactIntl';
 import { required } from '../../../../util/validators';
-import { FieldSelect, FieldTextInput, FieldCheckbox } from '../../../../components';
+import { PillChoice, FieldTextInput, FieldCheckbox } from '../../../../components';
 import {
   TICKET_TYPE_MOBILE,
   TICKET_TYPE_PDF,
@@ -24,9 +24,21 @@ import css from './EditListingTicketFields.module.css';
  * disclosure, not a different submission model.
  */
 const TICKET_TYPE_OPTIONS = [
-  { value: TICKET_TYPE_MOBILE, labelId: 'EditListingTicketFields.typeMobile' },
-  { value: TICKET_TYPE_PDF, labelId: 'EditListingTicketFields.typePdf' },
-  { value: TICKET_TYPE_PHYSICAL, labelId: 'EditListingTicketFields.typePhysical' },
+  {
+    value: TICKET_TYPE_MOBILE,
+    labelId: 'EditListingTicketFields.typeMobile',
+    hintId: 'EditListingTicketFields.typeMobileHint',
+  },
+  {
+    value: TICKET_TYPE_PDF,
+    labelId: 'EditListingTicketFields.typePdf',
+    hintId: 'EditListingTicketFields.typePdfHint',
+  },
+  {
+    value: TICKET_TYPE_PHYSICAL,
+    labelId: 'EditListingTicketFields.typePhysical',
+    hintId: 'EditListingTicketFields.typePhysicalHint',
+  },
 ];
 
 const Attestation = props => {
@@ -58,22 +70,22 @@ const EditListingTicketFields = props => {
 
   return (
     <div className={css.root}>
-      <FieldSelect
+      {/* Pills rather than a dropdown, per the approved sell-flow direction. A native select hides
+          three short options behind a tap and a scroll; the pills show all of them at once, which
+          is the whole point of asking one question at a time. */}
+      <PillChoice
         id={`${formId}pub_ticketType`}
         name="pub_ticketType"
         className={css.field}
-        label={intl.formatMessage({ id: 'EditListingTicketFields.typeLabel' })}
+        legend={intl.formatMessage({ id: 'EditListingTicketFields.typeLabel' })}
+        hint={intl.formatMessage({ id: 'EditListingTicketFields.typeHint' })}
+        options={TICKET_TYPE_OPTIONS.map(opt => ({
+          value: opt.value,
+          label: intl.formatMessage({ id: opt.labelId }),
+          hint: intl.formatMessage({ id: opt.hintId }),
+        }))}
         validate={required(intl.formatMessage({ id: 'EditListingTicketFields.typeRequired' }))}
-      >
-        <option disabled value="">
-          {intl.formatMessage({ id: 'EditListingTicketFields.typePlaceholder' })}
-        </option>
-        {TICKET_TYPE_OPTIONS.map(opt => (
-          <option key={opt.value} value={opt.value}>
-            {intl.formatMessage({ id: opt.labelId })}
-          </option>
-        ))}
-      </FieldSelect>
+      />
 
       {ticketType === TICKET_TYPE_MOBILE ? (
         <>

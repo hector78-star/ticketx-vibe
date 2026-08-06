@@ -60,13 +60,19 @@
   --marketplaceColorLight: #4a12e2; /* hsl(256, 85%, 48%) */
   --marketplaceColorDark: #8d68f3; /* hsl(256, 85%, 68% */
 
-  /** 
+  /**
    * The fill color used by <PrimaryButton>
    * These might be overwritten by values from hosted assets
+   *
+   * Aligned to --marketplaceColor. Console branding sets the marketplace colour but does NOT set a
+   * primary button colour, so these fell through to Sharetribe's stock green while every themed
+   * element was purple - the homepage showed a green Search button beside purple CTAs. Setting a
+   * primary button colour in Console (Branding) still overrides this; the point is only that the
+   * fallback is now coherent instead of two-toned.
    */
-  --colorPrimaryButton: #138041;
-  --colorPrimaryButtonDark: #0d542a;
-  --colorPrimaryButtonLight: #1aad57;
+  --colorPrimaryButton: #6938ef;
+  --colorPrimaryButtonDark: #4a12e2;
+  --colorPrimaryButtonLight: #8d68f3;
 
   /** 
    * The fill color used by <SecondaryButton>
@@ -83,8 +89,25 @@
   --colorStatusFinalState: var(--colorGrey600);
 
   /* ================ Font ================ */
+  /**
+   * Two faces, doing two jobs.
+   *
+   * --fontFamily (Inter) is the working face: body copy, labels, buttons, forms, anything a person
+   * reads to get something done. Neutral by design.
+   *
+   * --fontFamilyHeading (Instrument Serif) is the display face, used for h1-h3 only. It is a
+   * high-contrast editorial serif and it only exists at weight 400, so hierarchy is built from
+   * SIZE and SPACE rather than from weight - which is why the heading rules below set
+   * font-weight: 400 explicitly. Asking for bold would trigger a synthetic smear of the regular
+   * cut and lose the contrast that makes the face worth having.
+   *
+   * The serif stops at h3. Below that, headings are working UI labels rather than display type,
+   * and a display serif at 16px reads as an accident.
+   */
   --fontFamily: -apple-system, BlinkMacSystemFont, 'Inter', Helvetica, Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --fontFamilyHeading: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    Georgia, 'Times New Roman', serif;
 
   --fontWeightRegular: 400;
   --fontWeightMedium: 500;
@@ -625,59 +648,69 @@ textarea {
   cursor: pointer;
 }
 
+/**
+ * h1-h3 are display type, set in Instrument Serif at weight 400.
+ *
+ * Sizes are deliberately smaller than the stock template's (64px h1 / 40px h2), which dwarfed
+ * everything around them on ordinary pages. Display sizes that big belong to the landing page,
+ * which sets its own; an inner page heading works at 48px.
+ *
+ * Negative tracking is what makes a serif read as designed rather than as a default. It scales
+ * with size - the larger the type, the more the natural gaps open up, so the tighter it needs to
+ * be pulled.
+ */
 .h1 {
-  font-weight: var(--fontWeightBlack);
-  font-size: 24px;
-  line-height: 24px;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
 
-  padding: 3px 0 3px 0;
-  /* margin-top + n * line-height + margin-bottom => x * 6px */
+  padding: 0;
   margin-top: 18px;
   margin-bottom: 18px;
 
   @media (--viewportMedium) {
-    font-size: 64px;
-    line-height: 64px;
-    padding: 0;
-    /* margin-top + n * line-height + margin-bottom => x * 8px */
+    font-size: 48px;
+    letter-spacing: -0.025em;
     margin-top: 24px;
     margin-bottom: 24px;
   }
 }
 
 .h2 {
-  font-weight: var(--fontWeightBold);
-  font-size: 21px;
-  line-height: 24px;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
 
-  padding: 4px 0 2px 0;
-  /* x * 6px */
+  padding: 0;
   margin-top: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 
   @media (--viewportMedium) {
-    font-size: 40px;
-    line-height: 56px;
-    padding: 5px 0 3px 0;
-    /* x * 8px */
+    font-size: 36px;
+    letter-spacing: -0.02em;
     margin-top: 24px;
     margin-bottom: 16px;
   }
 }
 
 .h3 {
-  font-weight: var(--fontWeightBold);
-  font-size: 18px;
-  line-height: 24px;
-  /* x * 6px */
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+
   margin-top: 18px;
   margin-bottom: 12px;
 
   @media (--viewportMedium) {
-    font-size: 30px;
-    line-height: 40px;
-    padding: 1px 0 7px 0;
-    /* x * 8px */
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    padding: 0;
     margin-top: 16px;
     margin-bottom: 16px;
   }

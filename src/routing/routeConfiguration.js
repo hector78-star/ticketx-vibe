@@ -22,6 +22,8 @@ const CurrentListingsPage = loadable(() => import(/* webpackChunkName: "CurrentL
 const SalesPage = loadable(() => import(/* webpackChunkName: "SalesPage" */ '../containers/SellPage/SalesPage'));
 const MyTicketsPage = loadable(() => import(/* webpackChunkName: "MyTicketsPage" */ '../containers/MyTicketsPage/MyTicketsPage'));
 const SellPage = loadable(() => import(/* webpackChunkName: "SellPage" */ '../containers/SellPage/SellPage'));
+const HomePage = loadable(() => import(/* webpackChunkName: "HomePage" */ '../containers/HomePage/HomePage'));
+const BuyPage = loadable(() => import(/* webpackChunkName: "BuyPage" */ '../containers/BuyPage/BuyPage'));
 const EventsPage = loadable(() => import(/* webpackChunkName: "EventsPage" */ '../containers/EventsPage/EventsPage'));
 const EventPage = loadable(() => import(/* webpackChunkName: "EventPage" */ '../containers/EventPage/EventPage'));
 const EmailVerificationPage = loadable(() => import(/* webpackChunkName: "EmailVerificationPage" */ '../containers/EmailVerificationPage/EmailVerificationPage'));
@@ -83,11 +85,19 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
   const authForPrivateMarketplace = isPrivateMarketplace ? { auth: true } : {};
   
   return [
+    // The homepage is coded rather than built in Console. A split buy/sell entry and a scroll-driven
+    // 3D reveal are not things PageBuilder can express. The hosted landing page still exists in
+    // Console and LandingPage.js is untouched - to go back to it, swap `component` here to
+    // `LandingPage` and restore `loadData: pageDataLoadingAPI.LandingPage.loadData`.
     {
       path: '/',
       name: 'LandingPage',
-      component: LandingPage,
-      loadData: pageDataLoadingAPI.LandingPage.loadData,
+      component: HomePage,
+    },
+    {
+      path: '/buy',
+      name: 'BuyPage',
+      component: BuyPage,
     },
     {
       path: '/p/:pageId',

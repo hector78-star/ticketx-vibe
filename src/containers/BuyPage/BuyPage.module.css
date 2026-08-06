@@ -1,0 +1,143 @@
+.main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 24px 120px 24px;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 112px 56px 160px 56px;
+  }
+}
+
+.header {
+  margin-bottom: 64px;
+}
+
+.eyebrow {
+  composes: marketplaceTinyFontStyles from global;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--colorGrey500);
+  margin: 0 0 16px 0;
+}
+
+.title {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: clamp(38px, 6vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0;
+  max-width: 16ch;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--colorGrey900);
+  perspective: 1200px;
+}
+
+/* Rules rather than boxes. Two cards side by side would read as a pricing table; two rules read as
+   a contents page, which is what this is. */
+.choice {
+  position: relative;
+  display: block;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+  text-decoration: none;
+  color: var(--colorGrey900);
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), padding-left 0.45s
+      cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 768px) {
+  .choice {
+    padding: 56px 0 56px 88px;
+  }
+}
+
+.choice:hover,
+.choice:focus-visible {
+  text-decoration: none;
+}
+
+@media (min-width: 768px) and (hover: hover) {
+  .choice:hover {
+    padding-left: 104px;
+    transform: translateZ(20px);
+  }
+}
+
+.index {
+  composes: marketplaceTinyFontStyles from global;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  color: var(--colorGrey300);
+  display: block;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .index {
+    position: absolute;
+    left: 0;
+    top: 62px;
+    margin-bottom: 0;
+  }
+}
+
+.choiceInner {
+  display: block;
+}
+
+.choiceTitle {
+  display: block;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: clamp(32px, 4.5vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 14px;
+}
+
+.choiceLead {
+  display: block;
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey700);
+  line-height: 1.6;
+  max-width: 46ch;
+  margin-bottom: 20px;
+}
+
+.choiceAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--colorGrey900);
+}
+
+.arrow {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.choice:hover .arrow {
+  transform: translateX(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice,
+  .arrow {
+    transition: none;
+    transform: none;
+  }
+}

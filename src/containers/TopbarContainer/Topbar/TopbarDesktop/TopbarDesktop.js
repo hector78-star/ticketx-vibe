@@ -20,35 +20,27 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 import css from './TopbarDesktop.module.css';
 
 import { ADMIN_USER_ID } from '../../../../util/events';
-import {
-  TICKET_LISTING_TYPE,
-  OTHER_LISTING_TYPE,
-} from '../../../../config/configListing';
 
 /**
  * TicketX primary navigation: tickets, everything else, and the seller hub.
  *
- * Both browse tabs reuse the existing /s/:listingType search route, so each is a full search page
- * scoped to one listing type rather than a new page that would drift from it.
+ * Two links, matching the two doors on the homepage: Buy and Sell. The nav should name the same
+ * things the homepage does, or the site appears to have two different mental models of itself.
+ *
+ * Buy leads to the chooser rather than straight to a search, because tickets and everything else
+ * browse differently - tickets by event, the rest by listing - and dropping someone into the wrong
+ * one is more confusing than asking.
  */
 const BrowseLinks = () => (
   <>
-    <NamedLink
-      className={css.topbarLink}
-      name="SearchPageWithListingType"
-      params={{ listingType: TICKET_LISTING_TYPE }}
-    >
+    <NamedLink className={css.topbarLink} name="BuyPage">
       <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.tickets" />
+        <FormattedMessage id="TopbarDesktop.buy" />
       </span>
     </NamedLink>
-    <NamedLink
-      className={css.topbarLink}
-      name="SearchPageWithListingType"
-      params={{ listingType: OTHER_LISTING_TYPE }}
-    >
+    <NamedLink className={css.topbarLink} name="NewListingPage">
       <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.marketplace" />
+        <FormattedMessage id="TopbarDesktop.sellCta" />
       </span>
     </NamedLink>
   </>
@@ -252,6 +244,11 @@ const TopbarDesktop = props => {
   const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
   const loginLinkMaybe = isAuthenticatedOrJustHydrated ? null : <LoginLink />;
 
+  // NOTE: this searches listings, not events. On a marketplace where tickets are found by event,
+  // typing "Starfields" here returns individual ticket listings rather than the event - the model
+  // the rest of the site has moved away from. It is left in place because it is the only global
+  // search and several template pages assume it exists; pointing it at events is a real piece of
+  // work, not a deletion.
   const searchFormMaybe = showSearchForm ? (
     <TopbarSearchForm
       className={classNames(css.searchLink, { [css.takeAvailableSpace]: giveSpaceForSearch })}
@@ -282,12 +279,15 @@ const TopbarDesktop = props => {
       />
       {searchFormMaybe}
 
+      {/* showCreateListingsLink is forced off: it renders a "Post a new listing" call to action
+          that points at exactly the same place as the Sell link below it. Two differently worded
+          buttons for one action reads as two actions. */}
       <CustomLinksMenu
         currentPage={currentPage}
         customLinks={customLinks}
         intl={intl}
         hasClientSideContentReady={authenticatedOnClientSide || !isAuthenticatedOrJustHydrated}
-        showCreateListingsLink={showCreateListingsLink}
+        showCreateListingsLink={false}
       />
 
       <BrowseLinks />

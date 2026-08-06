@@ -1,0 +1,346 @@
+/**
+ * Homepage.
+ *
+ * Swiss discipline: one accent colour, a hairline rule instead of a border, type doing the work
+ * that decoration usually does. The two doors carry the page through scale and space, not imagery -
+ * which also means the page has nothing to load and no photograph to go stale.
+ */
+
+.main {
+  width: 100%;
+}
+
+/* ============================================================
+   The split: buy and sell, side by side
+   ============================================================ */
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Full viewport minus the topbar, so the fold lands on the divider rather than mid-sentence. */
+  min-height: calc(100svh - var(--topbarHeight, 72px));
+  border-bottom: 1px solid var(--colorGrey100);
+  /* Shared perspective: the two doors tilt as faces of one surface, not as separate boxes. */
+  perspective: 1400px;
+}
+
+@media (min-width: 768px) {
+  .split {
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100svh - var(--topbarHeightDesktop, 72px));
+  }
+}
+
+.doorBuy,
+.doorSell {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 48px 24px;
+  text-decoration: none;
+  color: var(--colorGrey900);
+  background-color: var(--colorWhite);
+  transform-style: preserve-3d;
+  transition: background-color 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .doorBuy,
+  .doorSell {
+    padding: 64px 56px;
+    align-items: center;
+  }
+
+  /* The hairline between the two halves. A border would thicken on one side at some zoom levels;
+     a positioned 1px element stays a hairline. */
+  .doorSell::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--colorGrey100);
+  }
+}
+
+.doorBuy {
+  background-color: var(--colorWhite);
+}
+
+/* Off-white rather than a second colour. The difference between the halves should be legible
+   without either one shouting. */
+.doorSell {
+  background-color: #fafaf9;
+}
+
+.doorBuy:hover,
+.doorSell:hover,
+.doorBuy:focus-visible,
+.doorSell:focus-visible {
+  text-decoration: none;
+  background-color: #f4f4f2;
+}
+
+/* The 3D on hover: the panel leans very slightly towards the reader. Small numbers on purpose -
+   past about 2 degrees this stops reading as depth and starts reading as a broken layout. */
+@media (min-width: 768px) and (hover: hover) {
+  .doorBuy:hover {
+    transform: rotateY(1.2deg) translateZ(24px);
+  }
+
+  .doorSell:hover {
+    transform: rotateY(-1.2deg) translateZ(24px);
+  }
+}
+
+.doorIndex {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  composes: marketplaceTinyFontStyles from global;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  color: var(--colorGrey300);
+}
+
+@media (min-width: 768px) {
+  .doorIndex {
+    top: 40px;
+    left: 56px;
+  }
+}
+
+.doorInner {
+  display: block;
+  max-width: 26ch;
+}
+
+.doorTitle {
+  display: block;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: clamp(64px, 13vw, 132px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+
+.doorLead {
+  display: block;
+  composes: marketplaceBodyFontStyles from global;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--colorGrey700);
+  margin-bottom: 28px;
+  max-width: 34ch;
+}
+
+.doorAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--colorGrey900);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--colorGrey900);
+}
+
+.doorArrow {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.doorBuy:hover .doorArrow,
+.doorSell:hover .doorArrow {
+  transform: translateX(6px);
+}
+
+/* ============================================================
+   How it works
+   ============================================================ */
+
+.how {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 96px 24px 120px 24px;
+  /* Perspective lives here so the three steps rotate as one surface. */
+  perspective: 1200px;
+}
+
+@media (min-width: 768px) {
+  .how {
+    padding: 140px 56px 160px 56px;
+  }
+}
+
+.howHeader {
+  margin-bottom: 64px;
+}
+
+.eyebrow {
+  composes: marketplaceTinyFontStyles from global;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--colorGrey500);
+  margin: 0 0 16px 0;
+}
+
+.howTitle,
+.howTitleRevealed {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: clamp(34px, 5vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0;
+  max-width: 20ch;
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.howTitle {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.howTitleRevealed {
+  opacity: 1;
+  transform: none;
+}
+
+.steps {
+  list-style: none;
+  margin: 0 0 88px 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 768px) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 56px;
+  }
+}
+
+/* The reveal. Tilted back and pushed away in Z, resolving to flat - the "3D scroll" without any
+   scroll handler: see useRevealOnScroll.js. transform-origin at the top edge makes it read as
+   hinging up into place rather than growing. */
+.step,
+.stepRevealed {
+  padding-top: 28px;
+  border-top: 1px solid var(--colorGrey900);
+  transform-origin: 50% 0%;
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.step {
+  opacity: 0;
+  transform: rotateX(-24deg) translateZ(-80px) translateY(28px);
+}
+
+.stepRevealed {
+  opacity: 1;
+  transform: none;
+}
+
+.stepNumber {
+  display: block;
+  composes: marketplaceTinyFontStyles from global;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  color: var(--colorGrey500);
+  margin-bottom: 20px;
+}
+
+.stepTitle {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px 0;
+}
+
+.stepBody {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey700);
+  line-height: 1.6;
+  max-width: 38ch;
+}
+
+/* ============================================================
+   Assurances
+   ============================================================ */
+
+.assurances {
+  list-style: none;
+  margin: 0;
+  padding: 40px 0 0 0;
+  border-top: 1px solid var(--colorGrey100);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .assurances {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+}
+
+.assurance,
+.assuranceRevealed {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey700);
+  line-height: 1.6;
+  padding-left: 20px;
+  position: relative;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.assurance::before,
+.assuranceRevealed::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 8px;
+  height: 1px;
+  background-color: var(--colorGrey900);
+}
+
+.assurance {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.assuranceRevealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Motion is decoration. Anyone who has asked the operating system for less of it gets the page
+   with none - not a slower version of the same thing. */
+@media (prefers-reduced-motion: reduce) {
+  .doorBuy,
+  .doorSell,
+  .doorArrow,
+  .step,
+  .stepRevealed,
+  .howTitle,
+  .howTitleRevealed,
+  .assurance,
+  .assuranceRevealed {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+}

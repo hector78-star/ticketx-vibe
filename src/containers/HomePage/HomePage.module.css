@@ -102,7 +102,7 @@
   composes: marketplaceTinyFontStyles from global;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.12em;
-  color: var(--colorGrey300);
+  color: var(--colorGrey600);
 }
 
 @media (min-width: 768px) {
@@ -201,7 +201,7 @@
   composes: marketplaceTinyFontStyles from global;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--colorGrey500);
+  color: var(--colorGrey600);
   margin: 0 0 16px 0;
 }
 
@@ -270,7 +270,7 @@
   composes: marketplaceTinyFontStyles from global;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.12em;
-  color: var(--colorGrey500);
+  color: var(--colorGrey600);
   margin-bottom: 20px;
 }
 

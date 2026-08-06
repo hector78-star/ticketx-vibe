@@ -127,6 +127,11 @@
   }
 }
 
+/* Sits between the seller's name and their bio, so trust is read before the sales pitch. */
+.reputation {
+  margin: 4px 0 8px 0;
+}
+
 .editProfileDesktop {
   composes: p from global;
   display: none;

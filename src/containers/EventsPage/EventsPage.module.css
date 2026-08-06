@@ -20,6 +20,84 @@
   color: var(--colorGrey500);
 }
 
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 32px 0;
+}
+
+.searchInput {
+  composes: marketplaceBodyFontStyles from global;
+  flex: 1 1 240px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorWhite);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+}
+
+.searchButton {
+  composes: buttonPrimary from global;
+  width: auto;
+  min-height: 44px;
+  padding: 0 24px;
+  border-radius: var(--borderRadiusMedium, 8px);
+}
+
+.clearButton {
+  composes: buttonSecondary from global;
+  width: auto;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--borderRadiusMedium, 8px);
+}
+
+/* Tickets for seller-created events, shown directly rather than behind an event page that would
+   have nothing curated on it. */
+.directSection {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.directHeading {
+  margin: 0 0 4px 0;
+}
+
+.directSubtitle {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 20px 0;
+  color: var(--colorGrey500);
+}
+
+.ticketGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 550px) {
+  .ticketGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ticketGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr;

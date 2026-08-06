@@ -1,0 +1,34 @@
+.root {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verified,
+.unverified {
+  composes: marketplaceTinyFontStyles from global;
+  border-radius: 100px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.verified {
+  color: #1e7a45;
+  background-color: #e6f5ec;
+  font-weight: var(--fontWeightSemiBold);
+}
+
+/* Neutral, not a warning. Most sellers here are new rather than untrustworthy, and a red badge
+   would punish them for having sold nothing yet. */
+.unverified {
+  color: var(--colorGrey500);
+  background-color: var(--colorGrey50);
+}
+
+.rating,
+.sales {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+  white-space: nowrap;
+}

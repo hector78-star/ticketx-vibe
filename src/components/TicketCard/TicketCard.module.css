@@ -1,0 +1,105 @@
+/* One ticket in the event page list. No image: the event is already pictured above, and every
+   ticket for it would otherwise repeat the same photo. */
+.card {
+  list-style: none;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+  background-color: var(--colorWhite);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--colorGrey300);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.link {
+  display: block;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ticketType {
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+  background-color: var(--colorGrey50);
+  border-radius: 100px;
+  padding: 3px 10px;
+}
+
+.platform {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+
+.priceBlock {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* Serif, matching the display scale - a price is the headline of a ticket card. Tabular figures so
+   a column of prices aligns on the decimal instead of drifting. */
+.price {
+  composes: h3 from global;
+  margin: 0;
+  color: var(--colorGrey900);
+  font-variant-numeric: tabular-nums;
+}
+
+.priceOver,
+.priceUnder,
+.priceAt {
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+}
+
+/* Over face value is called out, not buried: the marketplace promises buyers they save money. */
+.priceOver {
+  color: var(--colorFail);
+}
+
+.priceUnder {
+  color: #27ae60;
+}
+
+.priceAt {
+  color: var(--colorGrey500);
+}
+
+.seller {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sellerName {
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
+}
+
+/* The verified badge and rating live in SellerReputation, shared with the listing page. */
+
+.cta {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--marketplaceColor);
+  font-weight: var(--fontWeightSemiBold);
+}

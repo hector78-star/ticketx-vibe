@@ -33,8 +33,13 @@ const EVENT_FIELDS = [
   'publicData.venue',
   'publicData.faceValue',
   'publicData.lastSoldPrice',
+  'publicData.soldCount',
   'publicData.curated',
 ];
+
+/** Today as the same sortable YYYYMMDD integer that eventDate uses. */
+export const todayAsEventDate = (now = new Date()) =>
+  now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
 
 // Event images are reused wherever a ticket is rendered, including the listing page's gallery, so
 // they must be fetched with the same variants a listing would be. Requesting only the card
@@ -60,81 +65,116 @@ const imageParams = (config, variantPrefix = 'listing-card') => {
 };
 
 /**
- * Query the curated event catalog.
+ * Query the curated event catalog, soonest event first.
  *
- * pub_listingType is indexed by Sharetribe by default, so this needs no custom search schema.
- * Both admin-curated and seller-created events are returned - a seller must be able to find an
- * event another seller just added.
+ * pub_listingType is indexed by Sharetribe by default. eventDate needs a search schema, which is
+ * set (`flex-cli search set --key eventDate --type long --scope public`); without it the API
+ * accepts `sort` and `pub_eventDate` and silently ignores both, which is how this previously ended
+ * up rendering the catalog in creation order.
+ *
+ * NOTE the sort direction. In Sharetribe a bare field name sorts DESCENDING and the '-' prefix
+ * sorts ASCENDING - the opposite of the usual convention, and why configSearch.js labels '-price'
+ * as "lowest price". Soonest-first is therefore '-pub_eventDate', verified against the live API.
+ *
+ * Events that have already happened are excluded by default: a resale catalog led by last term's
+ * balls is worse than useless. Pass `includePast: true` for the admin view, which has to be able
+ * to see and tidy everything.
  */
 export const queryEvents = (sdk, config, params = {}) => {
+  const { includePast = false, ...rest } = params;
+  // Fetching explicit ids is a lookup, not a browse: EventPage resolves one event this way, and
+  // applying the date filter there would 404 the page for any event that has already happened.
+  const isLookup = !!rest.ids;
+  const fromToday =
+    includePast || isLookup ? {} : { pub_eventDate: `${todayAsEventDate()},` };
   return sdk.listings.query({
     pub_listingType: EVENT_LISTING_TYPE,
+    sort: '-pub_eventDate',
+    ...fromToday,
     include: ['images'],
     'fields.listing': EVENT_FIELDS,
     ...imageParams(config),
-    ...params,
+    ...rest,
   });
 };
 
-// How much of the ticket inventory to scan when collecting one event's tickets. 5 x 100 = 500
-// tickets, which is far beyond what this marketplace holds today.
-export const TICKET_SCAN_PAGE_SIZE = 100;
-export const MAX_TICKET_SCAN_PAGES = 5;
+// Tickets shown on one event page. 100 is the API's maximum page size; an event with more tickets
+// than this needs pagination in the UI, not a bigger number here.
+export const TICKETS_PER_PAGE = 100;
 
 /**
  * Query the tickets on sale for one event, cheapest first.
  *
- * Filtering by pub_eventId does NOT work, and this was verified rather than assumed: querying
- * with a deliberately invalid eventId returned the full ticket list instead of nothing. The API
- * accepts the parameter and silently ignores it, because Sharetribe holds no search index for the
- * key and an index cannot be created from local config.
+ * This used to page through the whole ticket inventory and match eventId client-side, because
+ * `pub_eventId` was silently ignored: Sharetribe accepts an unindexed filter and returns
+ * everything. A search schema now exists for the key, so the filter is real:
  *
- * So the association is resolved client-side: page through ticket listings and keep the ones whose
- * publicData.eventId matches. The '-price' sort still runs server-side across all tickets, and
- * filtering a sorted list preserves its order, so results stay correctly ordered - this does not
- * degrade into sorting one page in isolation.
+ *   flex-cli search set --key eventId --type enum --scope public -m <marketplace>
  *
- * The limitation is reach, not correctness: beyond MAX_TICKET_SCAN_PAGES x TICKET_SCAN_PAGE_SIZE
- * tickets, later ones stop being seen. `scannedEverything` in the return value reports whether the
- * whole inventory was covered. The real fix is a search index on eventId, set through Sharetribe
- * CLI or Console; once that exists, this reverts to a one-line server-side filter.
+ * Verified against the live API rather than assumed - a deliberately invalid eventId returns 0
+ * results where it previously returned the full catalog. That test is the only reliable way to
+ * tell a working filter from an ignored one, so use it if this ever looks wrong again.
+ *
+ * The old scan capped out at 500 tickets; this has no such ceiling.
  */
+const TICKET_CARD_FIELDS = [
+  'title',
+  'price',
+  'deleted',
+  'state',
+  'publicData.listingType',
+  'publicData.eventId',
+  'publicData.ticketType',
+  'publicData.ticketPlatform',
+];
+
+// profile.publicData carries the seller's published reputation - see SELLER_STATS_KEY in
+// util/sellerStats.js. Without it every ticket card would need its own reviews request.
+const TICKET_AUTHOR_FIELDS = [
+  'profile.displayName',
+  'profile.abbreviatedName',
+  'profile.publicData',
+];
+
+/**
+ * Tickets for any of the given events, cheapest first.
+ *
+ * `pub_eventId` has an `enum` schema, and enum filters take a comma-separated list with OR
+ * semantics, so a set of events costs one request rather than one per event.
+ */
+export const queryTicketsForEvents = async (sdk, config, eventIds, params = {}) => {
+  const ids = (eventIds || []).filter(Boolean);
+  if (ids.length === 0) {
+    return { responses: [], listings: [] };
+  }
+
+  const response = await sdk.listings.query({
+    pub_listingType: TICKET_LISTING_TYPE,
+    pub_eventId: ids.join(','),
+    // configSearch.js already defines '-price' as the "lowest price" sort.
+    sort: '-price',
+    perPage: TICKETS_PER_PAGE,
+    include: ['author', 'images'],
+    'fields.listing': TICKET_CARD_FIELDS,
+    'fields.user': TICKET_AUTHOR_FIELDS,
+    ...imageParams(config),
+    ...params,
+  });
+
+  // Belt and braces. The server-side filter is doing the real work, but a missing search schema
+  // fails *silently* - the API accepts pub_eventId and returns everything - so this asserts the
+  // result rather than trusting it. If the index is ever unset, callers show nothing instead of
+  // showing every ticket on the marketplace under one event.
+  const wanted = new Set(ids);
+  const listings = response.data.data.filter(l => wanted.has(l.attributes?.publicData?.eventId));
+
+  return { responses: [response], listings };
+};
+
 export const queryTicketsForEvent = async (sdk, config, eventId, params = {}) => {
-  const responses = [];
-  const matched = [];
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    const response = await sdk.listings.query({
-      pub_listingType: TICKET_LISTING_TYPE,
-      // configSearch.js already defines '-price' as the "lowest price" sort.
-      sort: '-price',
-      perPage: TICKET_SCAN_PAGE_SIZE,
-      page,
-      include: ['author', 'images'],
-      'fields.listing': [
-        'title',
-        'price',
-        'deleted',
-        'state',
-        'publicData.listingType',
-        'publicData.eventId',
-      ],
-      'fields.user': ['profile.displayName', 'profile.abbreviatedName'],
-      ...imageParams(config),
-      ...params,
-    });
-
-    responses.push(response);
-    totalPages = response.data.meta?.totalPages ?? 1;
-    matched.push(
-      ...response.data.data.filter(l => l.attributes?.publicData?.eventId === eventId)
-    );
-    page += 1;
-  } while (page <= totalPages && page <= MAX_TICKET_SCAN_PAGES);
-
-  return { responses, listings: matched, scannedEverything: totalPages <= MAX_TICKET_SCAN_PAGES };
+  const { responses, listings } = await queryTicketsForEvents(sdk, config, [eventId], params);
+  const totalPages = responses[0]?.data?.meta?.totalPages ?? 1;
+  return { responses, listings, scannedEverything: totalPages <= 1 };
 };
 
 /**
@@ -190,6 +230,9 @@ export const eventSummary = listing => {
     venue: pd.venue,
     faceValue: pd.faceValue,
     lastSoldPrice: pd.lastSoldPrice,
+    // Admin-maintained. null and 0 mean different things here (not tracked vs none sold), so this
+    // deliberately does not coerce to a number.
+    soldCount: pd.soldCount,
     // false for events a seller added on the fly; admin can adopt them later.
     curated: pd.curated !== false,
     authorId: listing.author?.id?.uuid,

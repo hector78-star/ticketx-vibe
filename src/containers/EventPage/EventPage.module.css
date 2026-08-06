@@ -59,9 +59,12 @@
   color: var(--colorGrey500);
 }
 
+/* Three figures now (face value, last sold, tickets sold), so this has to wrap rather than
+   squeeze on a narrow screen. */
 .guidance {
   display: flex;
-  gap: 32px;
+  flex-wrap: wrap;
+  gap: 16px 32px;
   margin: 0 0 24px 0;
 }
 
@@ -82,8 +85,10 @@
   color: var(--colorGrey900);
 }
 
+/* Primary, not secondary. It is the only action on this half of the page, and a marketplace with
+   no sellers has nothing to sell. */
 .sellCta {
-  composes: buttonSecondary from global;
+  composes: buttonPrimary from global;
   display: inline-flex;
   width: auto;
   min-height: 40px;
@@ -99,10 +104,14 @@
   border-top: 1px solid var(--colorGrey100);
 }
 
+/* Sits inside the h2, so it inherits the display serif unless told otherwise. A high-contrast
+   display face at 13px reads as a rendering fault rather than a choice - small text is Inter's job. */
 .ticketCount {
   composes: marketplaceTinyFontStyles from global;
+  font-family: var(--fontFamily);
   color: var(--colorGrey500);
   font-weight: var(--fontWeightRegular);
+  letter-spacing: 0;
 }
 
 .notice {
@@ -110,10 +119,15 @@
   color: var(--colorGrey500);
 }
 
+/* A list, not a card grid. Without images the cards are short, so a tighter gap and narrower
+   columns keep a long ticket list scannable rather than sprawling. */
 .ticketGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 12px;
 }
 
 @media (min-width: 550px) {

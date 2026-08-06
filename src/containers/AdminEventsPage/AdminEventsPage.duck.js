@@ -22,6 +22,7 @@ const EVENT_FIELDS = [
   'publicData.venue',
   'publicData.faceValue',
   'publicData.lastSoldPrice',
+  'publicData.soldCount',
 ];
 
 const imageQueryParams = config => {
@@ -73,6 +74,7 @@ export const updateEvent = createAsyncThunk(
             venue: values.venue,
             faceValue: values.faceValue,
             lastSoldPrice: values.lastSoldPrice,
+            soldCount: values.soldCount,
           },
         },
         {
@@ -115,6 +117,7 @@ export const createEvent = createAsyncThunk(
             venue: values.venue,
             faceValue: values.faceValue,
             lastSoldPrice: values.lastSoldPrice,
+            soldCount: values.soldCount,
           },
         },
         {

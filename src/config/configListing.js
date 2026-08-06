@@ -150,6 +150,24 @@ export const listingFields = [
       isRequired: false,
     },
   },
+  {
+    key: 'soldCount',
+    scope: 'public',
+    schemaType: 'long',
+    numberConfig: { minimum: 0, maximum: 1000000 },
+    listingTypeConfig: { limitToListingTypeIds: true, listingTypeIds: [EVENT_LISTING_TYPE] },
+    filterConfig: { indexForSearch: false, showFilter: false, label: 'Tickets sold' },
+    showConfig: { label: 'Tickets sold', isDetail: true },
+    saveConfig: {
+      label: 'Tickets sold so far',
+      placeholderMessage: 'e.g. 120',
+      // Admin-maintained demand signal, not a derived figure: it counts every ticket sold for the
+      // event, including sales that never went through this marketplace. Optional, because a newly
+      // curated event legitimately has nothing to report yet - and 0 must stay distinguishable from
+      // "not tracked", which is why this is not defaulted.
+      isRequired: false,
+    },
+  },
 
   // ---------------------------------------------------------------------------
   // Ticket fields. Written by the event picker, never typed by a seller, so they

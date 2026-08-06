@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as log from '../util/log';
 import { storableError } from '../util/errors';
 import { addMarketplaceEntities } from './marketplaceData.duck';
-import { queryEvents, hasAdminConfigured } from '../util/events';
+import { queryEvents, queryTicketsForEvents, hasAdminConfigured } from '../util/events';
 import { EVENT_LISTING_TYPE } from '../config/configListing';
 
 /**
@@ -38,6 +38,57 @@ const fetchEventsPayloadCreator = async (arg, thunkAPI) => {
 };
 
 export const fetchEvents = createAsyncThunk('events/fetchEvents', fetchEventsPayloadCreator);
+
+/**
+ * Browsing tickets, which is event-first rather than listing-first.
+ *
+ * Searching "Starfields" should surface the event once - with its photo, face value and sold count
+ * - not fifty near-identical ticket listings. Clicking through then shows the tickets.
+ *
+ * Seller-created events are the exception. They exist because one seller needed an event that was
+ * not in the catalog, so there is no curated detail worth a landing page and often a single ticket
+ * behind it. Sending a buyer through a bare intermediate page to reach one listing is friction for
+ * nothing, so those tickets are surfaced directly in the results instead.
+ *
+ * Kept separate from fetchEvents because that one backs the seller's event picker, which always
+ * wants the whole catalog regardless of what a buyer last searched for.
+ */
+export const searchEvents = createAsyncThunk(
+  'events/searchEvents',
+  async ({ keywords, config }, { extra: sdk, dispatch, rejectWithValue }) => {
+    try {
+      const keywordsMaybe = keywords ? { keywords } : {};
+      const response = await queryEvents(sdk, config, {
+        perPage: MAX_EVENT_COUNT,
+        page: 1,
+        ...keywordsMaybe,
+      });
+      dispatch(addMarketplaceEntities(response));
+
+      const events = response.data.data;
+      const isCurated = l => l.attributes?.publicData?.curated !== false;
+      const curated = events.filter(isCurated);
+      const sellerCreated = events.filter(l => !isCurated(l));
+
+      // One request for every seller-created event's tickets, not one per event.
+      const { responses, listings } = await queryTicketsForEvents(
+        sdk,
+        config,
+        sellerCreated.map(l => l.id.uuid)
+      );
+      responses.forEach(r => dispatch(addMarketplaceEntities(r)));
+
+      return {
+        keywords: keywords || '',
+        eventIds: curated.map(l => l.id),
+        directTicketIds: listings.map(l => l.id),
+      };
+    } catch (error) {
+      log.error(error, 'events-search-failed', { keywords });
+      return rejectWithValue(storableError(error));
+    }
+  }
+);
 
 /**
  * Let a seller add an event that is missing from the catalog.
@@ -88,6 +139,16 @@ const eventsSlice = createSlice({
     error: null,
     creating: false,
     createError: null,
+    // Browse/search results, kept apart from the full catalog above so a buyer's search never
+    // narrows what the seller's event picker can see.
+    search: {
+      keywords: '',
+      eventIds: [],
+      directTicketIds: [],
+      fetched: false,
+      inProgress: false,
+      error: null,
+    },
   },
   reducers: {},
   extraReducers: builder => {
@@ -105,6 +166,22 @@ const eventsSlice = createSlice({
         state.inProgress = false;
         state.fetched = false;
         state.error = action.payload;
+      })
+      .addCase(searchEvents.pending, state => {
+        state.search.inProgress = true;
+        state.search.error = null;
+      })
+      .addCase(searchEvents.fulfilled, (state, action) => {
+        state.search.inProgress = false;
+        state.search.fetched = true;
+        state.search.keywords = action.payload.keywords;
+        state.search.eventIds = action.payload.eventIds;
+        state.search.directTicketIds = action.payload.directTicketIds;
+      })
+      .addCase(searchEvents.rejected, (state, action) => {
+        state.search.inProgress = false;
+        state.search.fetched = false;
+        state.search.error = action.payload;
       })
       .addCase(createSellerEvent.pending, state => {
         state.creating = true;

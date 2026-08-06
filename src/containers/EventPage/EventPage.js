@@ -11,7 +11,7 @@ import {
   LayoutSingleColumn,
   H1,
   H2,
-  ListingCard,
+  TicketCard,
   NamedLink,
   ResponsiveImage,
 } from '../../components';
@@ -68,18 +68,19 @@ export const EventPageComponent = () => {
       <FormattedMessage id="EventPage.noTickets" />
     </p>
   ) : (
-    <div className={css.ticketGrid}>
+    // No image substitution here any more. Tickets borrow the event photo elsewhere in the app,
+    // but on this page the event is already pictured above, so repeating it on every card made
+    // identical tiles whose only difference was the price. TicketCard shows what differs instead.
+    <ul className={css.ticketGrid}>
       {tickets.map(listing => (
-        <ListingCard
+        <TicketCard
           key={listing.id.uuid}
           className={css.ticketCard}
-          // Tickets borrow the curated event's photo. Here the event is already loaded, so the
-          // substitution is direct rather than going through useEventImages.
-          listing={eventListing?.images?.length ? { ...listing, images: eventListing.images } : listing}
-          showAuthorInfo={true}
+          listing={listing}
+          faceValue={event?.faceValue}
         />
       ))}
-    </div>
+    </ul>
   );
 
   return (
@@ -119,6 +120,19 @@ export const EventPageComponent = () => {
                     {lastSold || intl.formatMessage({ id: 'EventPage.noSalesYet' })}
                   </dd>
                 </div>
+                {/* Only rendered when admin has entered a figure. 0 is a real answer ("none sold
+                    yet") and must still show; undefined means nobody is tracking it, and inventing
+                    a "0 sold" for an event nobody has counted would be a lie. */}
+                {typeof event.soldCount === 'number' ? (
+                  <div className={css.guidanceRow}>
+                    <dt className={css.guidanceTerm}>
+                      <FormattedMessage id="EventPage.soldCount" />
+                    </dt>
+                    <dd className={css.guidanceValue}>
+                      {intl.formatNumber(event.soldCount)}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
               <NamedLink className={css.sellCta} name="NewListingPage">
                 <FormattedMessage id="EventPage.sellCta" />

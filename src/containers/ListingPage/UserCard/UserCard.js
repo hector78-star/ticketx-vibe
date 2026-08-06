@@ -7,7 +7,7 @@ import { richText } from '../../../util/richText';
 import { ensureUser, ensureCurrentUser } from '../../../util/data';
 import { propTypes } from '../../../util/types';
 
-import { AvatarLarge, NamedLink, InlineTextButton } from '../../../components';
+import { AvatarLarge, NamedLink, InlineTextButton, SellerReputation } from '../../../components';
 
 import css from './UserCard.module.css';
 
@@ -160,6 +160,10 @@ const UserCard = props => {
             <FormattedMessage id="UserCard.heading" values={{ name: displayName }} />
             {editProfileDesktop}
           </div>
+          {/* Reputation sits directly under the seller's name, on the page where the buyer is
+              about to pay. Browsing already showed it on the ticket card; this is the same
+              component so the two cannot say different things. */}
+          <SellerReputation className={css.reputation} user={user} showSales />
           {hasBio ? <ExpandableBio className={css.desktopBio} bio={bio} /> : null}
           {links}
         </div>

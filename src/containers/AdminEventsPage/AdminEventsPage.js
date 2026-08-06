@@ -26,6 +26,7 @@ const EMPTY_EVENT = {
   venue: '',
   faceValue: '',
   lastSoldPrice: '',
+  soldCount: '',
 };
 
 /** Numbers come back from inputs as strings; the API expects integers or null. */
@@ -44,6 +45,7 @@ const normaliseValues = values => ({
   venue: values.venue?.trim() || null,
   faceValue: toNumberOrNull(values.faceValue),
   lastSoldPrice: toNumberOrNull(values.lastSoldPrice),
+  soldCount: toNumberOrNull(values.soldCount),
 });
 
 const EventFields = props => {
@@ -83,6 +85,7 @@ const EventFields = props => {
         {field('faceValue', 'AdminEventsPage.fieldFaceValue', '4500', 'number')}
         {field('lastSoldPrice', 'AdminEventsPage.fieldLastSold', '6000', 'number')}
       </div>
+      {field('soldCount', 'AdminEventsPage.fieldSoldCount', '120', 'number')}
       <p className={css.preview}>
         {intl.formatMessage(
           { id: 'AdminEventsPage.pricePreview' },
@@ -107,6 +110,7 @@ const EventRow = props => {
     venue: summary.venue ?? '',
     faceValue: summary.faceValue ?? '',
     lastSoldPrice: summary.lastSoldPrice ?? '',
+    soldCount: summary.soldCount ?? '',
   });
 
   const isSaving = savingId === listingId.uuid;

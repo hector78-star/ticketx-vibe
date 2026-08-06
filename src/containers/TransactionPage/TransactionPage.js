@@ -759,6 +759,10 @@ export const TransactionPageComponent = props => {
       )
     : {};
 
+  // Which dispute transition applies depends on the state the transaction is in: a buyer can
+  // dispute from `purchased` as well as from `delivered`, and those are separate transitions.
+  const disputeTransitionName = stateData.disputeTransitionName || process?.transitions?.DISPUTE;
+
   const hasLineItems = transaction?.attributes?.lineItems?.length > 0;
   const unitLineItem = hasLineItems
     ? transaction.attributes?.lineItems?.find(
@@ -1075,7 +1079,7 @@ export const TransactionPageComponent = props => {
             reportError={transitionError}
           />
         ) : null}
-        {process?.transitions?.DISPUTE ? (
+        {disputeTransitionName ? (
           <DisputeModal
             id="DisputeOrderModal"
             isOpen={isDisputeModalOpen}
@@ -1084,12 +1088,12 @@ export const TransactionPageComponent = props => {
             onManageDisableScrolling={onManageDisableScrolling}
             onDisputeOrder={onDisputeOrder(
               transaction?.id,
-              process.transitions.DISPUTE,
+              disputeTransitionName,
               onTransition,
               setDisputeSubmitted
             )}
             disputeSubmitted={disputeSubmitted}
-            disputeInProgress={transitionInProgress === process.transitions.DISPUTE}
+            disputeInProgress={transitionInProgress === disputeTransitionName}
             disputeError={transitionError}
           />
         ) : null}

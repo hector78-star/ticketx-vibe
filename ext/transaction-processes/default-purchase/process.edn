@@ -77,6 +77,16 @@
    :actions [{:name :action/update-protected-data}],
    :from :state/delivered,
    :to :state/disputed}
+  ;; Handover happens in the message thread, so a seller may never mark the order delivered. Without
+  ;; this, a buyer in :state/purchased can confirm receipt but cannot raise a dispute at all - their
+  ;; only options are to pay out a seller who handed over nothing, or wait for :transition/auto-cancel.
+  ;; Purely additive: no existing transition or action is changed, so money still moves exactly as
+  ;; it did before.
+  {:name :transition/dispute-from-purchased,
+   :actor :actor.role/customer,
+   :actions [{:name :action/update-protected-data}],
+   :from :state/purchased,
+   :to :state/disputed}
   {:name :transition/operator-dispute,
    :actor :actor.role/operator,
    :actions [],
@@ -265,6 +275,10 @@
    :template :purchase-order-auto-marked-as-received-provider}
   {:name :notification/order-disputed,
    :on :transition/dispute,
+   :to :actor.role/provider,
+   :template :purchase-order-disputed}
+  {:name :notification/order-disputed-from-purchased,
+   :on :transition/dispute-from-purchased,
    :to :actor.role/provider,
    :template :purchase-order-disputed}
   {:name :notification/purchase-order-operator-disputed-to-customer,

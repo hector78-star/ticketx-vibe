@@ -42,6 +42,18 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
       return { processName, processState, showDetailCardHeadings: true };
     })
     .cond([states.PURCHASED, CUSTOMER], () => {
+      // A buyer who can confirm receipt can also dispute. Sellers often never mark the order
+      // delivered, so gating dispute on that state left this buyer with no way to contest.
+      //
+      // Checked against the transitions the API actually offers rather than shown unconditionally:
+      // transition/dispute-from-purchased only exists once process.edn has been pushed with
+      // `flex-cli process push`. Until then the button stays hidden instead of erroring on click,
+      // and it appears on its own once the push lands.
+      const transitionNames = Array.isArray(nextTransitions)
+        ? nextTransitions.map(t => t.attributes.name)
+        : [];
+      const canDispute = transitionNames.includes(transitions.DISPUTE_FROM_PURCHASED);
+
       return {
         processName,
         processState,
@@ -49,6 +61,8 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showActionButtons: true,
         showExtraInfo: true,
         primaryButtonProps: actionButtonProps(transitions.MARK_RECEIVED_FROM_PURCHASED, CUSTOMER),
+        showDispute: canDispute,
+        disputeTransitionName: transitions.DISPUTE_FROM_PURCHASED,
       };
     })
     .cond([states.PURCHASED, PROVIDER], () => {
@@ -72,6 +86,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         processState,
         showDetailCardHeadings: true,
         showDispute: true,
+        disputeTransitionName: transitions.DISPUTE,
         showActionButtons: true,
         primaryButtonProps: actionButtonProps(transitions.MARK_RECEIVED, CUSTOMER),
       };

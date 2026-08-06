@@ -57,6 +57,10 @@ export const transitions = {
   DISPUTE: 'transition/dispute',
   OPERATOR_DISPUTE: 'transition/operator-dispute',
 
+  // A seller may never mark the order delivered, so the customer can also dispute straight from
+  // the purchased state - wherever they can confirm receipt, they can dispute instead.
+  DISPUTE_FROM_PURCHASED: 'transition/dispute-from-purchased',
+
   // If nothing is done to disputed transaction it ends up to Canceled state
   AUTO_CANCEL_FROM_DISPUTED: 'transition/auto-cancel-from-disputed',
 
@@ -153,6 +157,7 @@ export const graph = {
         [transitions.MARK_DELIVERED]: states.DELIVERED,
         [transitions.OPERATOR_MARK_DELIVERED]: states.DELIVERED,
         [transitions.MARK_RECEIVED_FROM_PURCHASED]: states.RECEIVED,
+        [transitions.DISPUTE_FROM_PURCHASED]: states.DISPUTED,
         [transitions.AUTO_CANCEL]: states.CANCELED,
         [transitions.CANCEL]: states.CANCELED,
       },
@@ -218,6 +223,7 @@ export const isRelevantPastTransition = transition => {
     transitions.MARK_DELIVERED,
     transitions.OPERATOR_MARK_DELIVERED,
     transitions.DISPUTE,
+    transitions.DISPUTE_FROM_PURCHASED,
     transitions.OPERATOR_DISPUTE,
     transitions.AUTO_COMPLETE,
     transitions.AUTO_CANCEL_FROM_DISPUTED,

@@ -53,7 +53,18 @@ export const useRevealOnScroll = (options = {}) => {
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+
+    // Safety net. If the observer never fires - a container that does not scroll the way we
+    // assumed, a browser quirk, a tab restored mid-scroll - the content would sit at opacity 0
+    // forever with no way for the reader to recover it. Hidden-by-default only works if something
+    // guarantees the unhide. Ten seconds is far longer than any real scroll-into-view, so this
+    // costs a normal reader nothing and rescues the abnormal one.
+    const failsafe = setTimeout(() => setRevealed(true), 10000);
+
+    return () => {
+      clearTimeout(failsafe);
+      observer.disconnect();
+    };
   }, [threshold, rootMargin]);
 
   return [ref, revealed];

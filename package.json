@@ -225,7 +225,9 @@
     "test-server": "jest --roots ./server --testMatch='**/server/**/*.test.js' --testEnvironment=node",
     "heroku-postbuild": "yarn run build",
     "postinstall": "patch-package",
-    "translate": "node scripts/translations.js"
+    "translate": "node scripts/translations.js",
+    "process:validate": "flex-cli process --path ext/transaction-processes/default-purchase",
+    "process:validate:proposed": "flex-cli process --path ext/transaction-processes/default-purchase-proposed"
   },
   "browserslist": {
     "production": [

@@ -1,0 +1,379 @@
+{:format :v3,
+ :transitions
+ [{:name :transition/inquire,
+   :actor :actor.role/customer,
+   :actions [{:name :action/update-protected-data}],
+   :to :state/inquiry}
+  {:name :transition/request-payment,
+   :actor :actor.role/customer,
+   :privileged? true,
+   :actions
+   [{:name :action/update-protected-data}
+    {:name :action/create-pending-stock-reservation}
+    {:name :action/privileged-set-line-items}
+    {:name :action/stripe-create-payment-intent}],
+   :to :state/pending-payment}
+  {:name :transition/request-payment-after-inquiry,
+   :actor :actor.role/customer,
+   :privileged? true,
+   :actions
+   [{:name :action/update-protected-data}
+    {:name :action/create-pending-stock-reservation}
+    {:name :action/privileged-set-line-items}
+    {:name :action/stripe-create-payment-intent}],
+   :from :state/inquiry,
+   :to :state/pending-payment}
+  {:name :transition/confirm-payment,
+   :actor :actor.role/customer,
+   :actions
+   [{:name :action/accept-stock-reservation}
+    {:name :action/stripe-confirm-payment-intent}
+    {:name :action/stripe-capture-payment-intent}],
+   :from :state/pending-payment,
+   :to :state/purchased}
+  {:name :transition/expire-payment,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/pending-payment]}
+     {:fn/period ["PT15M"]}]},
+   :actions
+   [{:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}
+    ;; Keep this action last in the list of actions for
+    ;; the transition
+    {:name :action/decline-stock-reservation}],
+   :from :state/pending-payment,
+   :to :state/payment-expired}
+  ;; Confirming receipt no longer moves money. It signals the operator that this sale is ready to
+  ;; pay out, and the transaction waits in :state/payout-pending for an explicit operator release.
+  ;; The payout action lives only on operator transitions from here on.
+  {:name :transition/mark-received-from-purchased,
+   :actor :actor.role/customer,
+   :actions [],
+   :from :state/purchased,
+   :to :state/payout-pending}
+  {:name :transition/mark-delivered,
+   :actor :actor.role/provider,
+   :actions [],
+   :from :state/purchased,
+   :to :state/delivered}
+  {:name :transition/operator-mark-delivered,
+   :actor :actor.role/operator,
+   :actions [],
+   :from :state/purchased,
+   :to :state/delivered}
+  {:name :transition/mark-received,
+   :actor :actor.role/customer,
+   :actions [],
+   :from :state/delivered,
+   :to :state/payout-pending}
+  ;; Safety net for a silent buyer. It no longer pays anyone: it moves the sale into the operator's
+  ;; queue so a seller who handed over a real ticket is not left waiting on a buyer who never clicks.
+  {:name :transition/auto-mark-received,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/delivered]}
+     {:fn/period ["P14D"]}]},
+   :actions [],
+   :from :state/delivered,
+   :to :state/payout-pending}
+  {:name :transition/dispute,
+   :actor :actor.role/customer,
+   :actions [{:name :action/update-protected-data}],
+   :from :state/delivered,
+   :to :state/disputed}
+  ;; Handover happens in the message thread, so a seller may never mark the order delivered. Without
+  ;; this transition a buyer in :state/purchased can confirm receipt but cannot raise a dispute -
+  ;; their only options are to pay out a seller who never handed anything over, or wait for
+  ;; :transition/auto-cancel. Disputing from :state/purchased freezes the funds instead.
+  {:name :transition/dispute-from-purchased,
+   :actor :actor.role/customer,
+   :actions [{:name :action/update-protected-data}],
+   :from :state/purchased,
+   :to :state/disputed}
+  {:name :transition/operator-dispute,
+   :actor :actor.role/operator,
+   :actions [],
+   :from :state/delivered,
+   :to :state/disputed}
+  {:name :transition/mark-received-from-disputed,
+   :actor :actor.role/operator,
+   :actions [{:name :action/stripe-create-payout}],
+   :from :state/disputed,
+   :to :state/received}
+  {:name :transition/cancel,
+   :actor :actor.role/operator,
+   :actions
+   [{:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}
+    ;; Keep this action last in the list of actions for
+    ;; the transition
+    {:name :action/cancel-stock-reservation}],
+   :from :state/purchased,
+   :to :state/canceled}
+  ;; Replaces :transition/auto-cancel, which refunded the buyer 14 days after purchase whether or
+  ;; not a real ticket had changed hands. Handover happens in the message thread, so neither party
+  ;; reliably clicks anything - that made losing both ticket and money the DEFAULT outcome for a
+  ;; seller, not an edge case. This moves the sale into the operator queue instead. No money moves;
+  ;; a human decides.
+  {:name :transition/auto-payout-review,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/purchased]}
+     {:fn/period ["P14D"]}]},
+   :actions [],
+   :from :state/purchased,
+   :to :state/payout-pending}
+  ;; The only route by which a seller gets paid on a non-disputed sale. Operator-only, fired from
+  ;; Console. This is what makes payouts a decision rather than an automatic consequence.
+  {:name :transition/operator-release-payout,
+   :actor :actor.role/operator,
+   :actions [{:name :action/stripe-create-payout}],
+   :from :state/payout-pending,
+   :to :state/received}
+  ;; The other half of that decision: refund the buyer instead of paying the seller.
+  {:name :transition/operator-refund-from-payout-pending,
+   :actor :actor.role/operator,
+   :actions
+   [{:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}
+    ;; Keep this action last in the list of actions for
+    ;; the transition
+    {:name :action/cancel-stock-reservation}],
+   :from :state/payout-pending,
+   :to :state/canceled}
+  ;; A dispute can still be raised after the buyer has confirmed, up until the payout is released.
+  {:name :transition/operator-dispute-from-payout-pending,
+   :actor :actor.role/operator,
+   :actions [],
+   :from :state/payout-pending,
+   :to :state/disputed}
+  {:name :transition/cancel-from-disputed,
+   :actor :actor.role/operator,
+   :actions
+   [{:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}
+    ;; Keep this action last in the list of actions for
+    ;; the transition
+    {:name :action/cancel-stock-reservation}],
+   :from :state/disputed,
+   :to :state/canceled}
+  {:name :transition/auto-cancel-from-disputed,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/disputed]}
+     {:fn/period ["P60D"]}]},
+   :actions
+   [{:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}
+    ;; Keep this action last in the list of actions for
+    ;; the transition
+    {:name :action/cancel-stock-reservation}],
+   :from :state/disputed,
+   :to :state/canceled}
+  {:name :transition/auto-complete,
+   :at {:fn/timepoint [:time/first-entered-state :state/received]},
+   :actions [],
+   :from :state/received,
+   :to :state/completed}
+  {:name :transition/review-1-by-provider,
+   :actor :actor.role/provider,
+   :actions [{:name :action/post-review-by-provider}],
+   :from :state/completed,
+   :to :state/reviewed-by-provider}
+  {:name :transition/review-2-by-provider,
+   :actor :actor.role/provider,
+   :actions
+   [{:name :action/post-review-by-provider}
+    {:name :action/publish-reviews}],
+   :from :state/reviewed-by-customer,
+   :to :state/reviewed}
+  {:name :transition/review-1-by-customer,
+   :actor :actor.role/customer,
+   :actions [{:name :action/post-review-by-customer}],
+   :from :state/completed,
+   :to :state/reviewed-by-customer}
+  {:name :transition/review-2-by-customer,
+   :actor :actor.role/customer,
+   :actions
+   [{:name :action/post-review-by-customer}
+    {:name :action/publish-reviews}],
+   :from :state/reviewed-by-provider,
+   :to :state/reviewed}
+  {:name :transition/expire-review-period,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/received]}
+     {:fn/period ["P7D"]}]},
+   :actions [],
+   :from :state/completed,
+   :to :state/reviewed}
+  {:name :transition/expire-provider-review-period,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/received]}
+     {:fn/period ["P7D"]}]},
+   :actions [{:name :action/publish-reviews}],
+   :from :state/reviewed-by-customer,
+   :to :state/reviewed}
+  {:name :transition/expire-customer-review-period,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/received]}
+     {:fn/period ["P7D"]}]},
+   :actions [{:name :action/publish-reviews}],
+   :from :state/reviewed-by-provider,
+   :to :state/reviewed}],
+ :notifications
+ [{:name :notification/order-receipt,
+   :on :transition/confirm-payment,
+   ;; This notification is delayed to give the customer a chance to verify their
+   ;; email address, in case they are a new customer.
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/purchased]}
+     {:fn/period ["PT15M"]}]},
+   :to :actor.role/customer,
+   :template :purchase-order-receipt}
+  {:name :notification/purchase-new-order,
+   :on :transition/confirm-payment,
+   :to :actor.role/provider,
+   :template :purchase-new-order}
+  {:name :notification/shipping-reminder,
+   :on :transition/confirm-payment,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/purchased]}
+     {:fn/period ["P3D"]}]},
+   :to :actor.role/provider,
+   :template :purchase-shipping-reminder}
+  {:name :notification/order-marked-as-delivered,
+   :on :transition/mark-delivered,
+   :to :actor.role/customer,
+   :template :purchase-order-marked-as-delivered}
+  {:name
+   :notification/purchase-order-operator-marked-as-delivered-to-customer,
+   :on :transition/operator-mark-delivered,
+   :to :actor.role/customer,
+   :template :purchase-order-marked-as-delivered}
+  {:name
+   :notification/purchase-order-operator-marked-as-delivered-to-provider,
+   :on :transition/operator-mark-delivered,
+   :to :actor.role/provider,
+   :template :purchase-order-operator-marked-as-delivered}
+  {:name :notification/purchase-mark-order-received-reminder,
+   :on :transition/mark-delivered,
+   :at
+   {:fn/plus
+    [{:fn/timepoint [:time/first-entered-state :state/delivered]}
+     {:fn/period ["P12D"]}]},
+   :to :actor.role/customer,
+   :template :purchase-mark-order-received-reminder}
+  ;; These now mean "the buyer confirmed, your payout is being reviewed" - NOT "money sent".
+  ;; Pointing them at the payment template would promise a seller money that has not moved yet.
+  {:name :notification/order-marked-as-received-from-purchased,
+   :on :transition/mark-received-from-purchased,
+   :to :actor.role/provider,
+   :template :purchase-receipt-confirmed}
+  {:name :notification/order-marked-as-received,
+   :on :transition/mark-received,
+   :to :actor.role/provider,
+   :template :purchase-receipt-confirmed}
+  ;; Sent when the operator releases the payout - this is the point money actually moves, so the
+  ;; "we sent you a payment" template belongs here rather than on the buyer's confirmation.
+  {:name :notification/payout-released,
+   :on :transition/operator-release-payout,
+   :to :actor.role/provider,
+   :template :purchase-order-marked-as-received}
+  {:name :notification/payout-pending-refunded-customer,
+   :on :transition/operator-refund-from-payout-pending,
+   :to :actor.role/customer,
+   :template :purchase-order-canceled-to-customer}
+  {:name :notification/payout-pending-refunded-provider,
+   :on :transition/operator-refund-from-payout-pending,
+   :to :actor.role/provider,
+   :template :purchase-order-canceled-to-provider}
+  {:name :notification/payout-pending-disputed,
+   :on :transition/operator-dispute-from-payout-pending,
+   :to :actor.role/provider,
+   :template :purchase-order-disputed}
+  {:name :notification/purchase-canceled,
+   :on :transition/cancel,
+   :to :actor.role/customer,
+   :template :purchase-order-canceled-to-customer}
+  {:name :notification/order-canceled,
+   :on :transition/cancel,
+   :to :actor.role/provider,
+   :template :purchase-order-canceled-to-provider}
+  {:name :notification/purchase-order-auto-marked-as-received-customer,
+   :on :transition/auto-mark-received,
+   :to :actor.role/customer,
+   :template :purchase-order-auto-marked-as-received-customer}
+  {:name :notification/purchase-order-auto-marked-as-received-provider,
+   :on :transition/auto-mark-received,
+   :to :actor.role/provider,
+   :template :purchase-receipt-confirmed}
+  {:name :notification/order-disputed,
+   :on :transition/dispute,
+   :to :actor.role/provider,
+   :template :purchase-order-disputed}
+  {:name :notification/order-disputed-from-purchased,
+   :on :transition/dispute-from-purchased,
+   :to :actor.role/provider,
+   :template :purchase-order-disputed}
+  {:name :notification/purchase-order-operator-disputed-to-customer,
+   :on :transition/operator-dispute,
+   :to :actor.role/customer,
+   :template :purchase-order-operator-disputed}
+  {:name :notification/purchase-order-operator-disputed-to-provider,
+   :on :transition/operator-dispute,
+   :to :actor.role/provider,
+   :template :purchase-order-disputed}
+  {:name :notification/order-received-from-disputed-customer,
+   :on :transition/mark-received-from-disputed,
+   :to :actor.role/customer,
+   :template :purchase-order-received-from-disputed-customer}
+  {:name :notification/order-received-from-disputed-provider,
+   :on :transition/mark-received-from-disputed,
+   :to :actor.role/provider,
+   :template :purchase-order-received-from-disputed-provider}
+  {:name :notification/canceled-from-disputed-customer,
+   :on :transition/cancel-from-disputed,
+   :to :actor.role/customer,
+   :template :purchase-order-canceled-from-disputed-customer}
+  {:name :notification/canceled-from-disputed-provider,
+   :on :transition/cancel-from-disputed,
+   :to :actor.role/provider,
+   :template :purchase-order-canceled-from-disputed-provider}
+  {:name :notification/auto-canceled-from-disputed-customer,
+   :on :transition/auto-cancel-from-disputed,
+   :to :actor.role/customer,
+   :template :purchase-order-auto-canceled-from-disputed-customer}
+  {:name :notification/auto-canceled-from-disputed-provider,
+   :on :transition/auto-cancel-from-disputed,
+   :to :actor.role/provider,
+   :template :purchase-order-auto-canceled-from-disputed-provider}
+  {:name :notification/review-period-start-provider,
+   :on :transition/auto-complete,
+   :to :actor.role/provider,
+   :template :purchase-order-review-by-provider-wanted}
+  {:name :notification/review-period-start-customer,
+   :on :transition/auto-complete,
+   :to :actor.role/customer,
+   :template :purchase-order-review-by-customer-wanted}
+  {:name :notification/review-by-provider-first,
+   :on :transition/review-1-by-provider,
+   :to :actor.role/customer,
+   :template :purchase-review-by-other-party-unpublished}
+  {:name :notification/review-by-customer-first,
+   :on :transition/review-1-by-customer,
+   :to :actor.role/provider,
+   :template :purchase-review-by-other-party-unpublished}
+  {:name :notification/review-by-provider-second,
+   :on :transition/review-2-by-provider,
+   :to :actor.role/customer,
+   :template :purchase-review-by-other-party-published}
+  {:name :notification/review-by-customer-second,
+   :on :transition/review-2-by-customer,
+   :to :actor.role/provider,
+   :template :purchase-review-by-other-party-published}]}

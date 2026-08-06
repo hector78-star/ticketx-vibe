@@ -104,7 +104,17 @@
    * The serif stops at h3. Below that, headings are working UI labels rather than display type,
    * and a display serif at 16px reads as an accident.
    */
-  --fontFamily: -apple-system, BlinkMacSystemFont, 'Inter', Helvetica, Arial, sans-serif,
+  /**
+   * Inter FIRST, ahead of the system faces.
+   *
+   * The stock stack led with -apple-system, so on macOS and iOS every word of body copy rendered
+   * in San Francisco and Inter was downloaded but never used - measured at 0 of 375 elements on
+   * the homepage. The marketplace then looked like a different product on a Mac than on Android,
+   * and the "curated pairing" was only half real.
+   *
+   * The system faces stay as fallbacks for the swap window and for anyone who blocks web fonts.
+   */
+  --fontFamily: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   --fontFamilyHeading: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino,
     Georgia, 'Times New Roman', serif;

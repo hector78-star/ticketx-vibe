@@ -4,7 +4,14 @@ import { storableError } from '../../util/errors';
 import { denormalisedResponseEntities } from '../../util/data';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { createImageVariantConfig } from '../../util/sdkLoader';
-import { computeSellerStats, isCompletedSale } from '../../util/sellerStats';
+import {
+  computeSellerStats,
+  isCompletedSale,
+  readSellerStats,
+  sellerStatsChanged,
+  sellerStatsPayload,
+  SELLER_STATS_KEY,
+} from '../../util/sellerStats';
 
 /**
  * Data behind the seller pages: the seller's own listings, their sales, and their reputation.
@@ -69,9 +76,25 @@ export const fetchSales = createAsyncThunk(
       const reviews = denormalisedResponseEntities(reviewsResponse);
 
       const completedSalesCount = txs.filter(isCompletedSale).length;
+      const stats = computeSellerStats(reviews, completedSalesCount);
+
+      // Publish reputation to the seller's own profile so buyers can see it on a ticket card.
+      // See the note on SELLER_STATS_KEY: nobody else can derive a completed-sales count for this
+      // user, so the seller's own session is the only place it can come from. Skipped when nothing
+      // changed, and never allowed to fail the page - this is a side effect of loading sales, not
+      // the point of it.
+      try {
+        const fresh = sellerStatsPayload(stats);
+        if (sellerStatsChanged(readSellerStats(currentUser.data.data), fresh)) {
+          await sdk.currentUser.updateProfile({ publicData: { [SELLER_STATS_KEY]: fresh } });
+        }
+      } catch (e) {
+        log.error(e, 'sell-publish-seller-stats-failed');
+      }
+
       return {
         transactionIds: response.data.data.map(t => t.id),
-        stats: computeSellerStats(reviews, completedSalesCount),
+        stats,
       };
     } catch (error) {
       log.error(error, 'sell-fetch-sales-failed');

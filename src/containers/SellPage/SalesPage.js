@@ -22,32 +22,47 @@ import css from './SalesPage.module.css';
  * once per sale rather than once per listing - which is the point of tracking payouts rather than
  * listings.
  */
+// Bar colour per stage of the payout. Keyed by tone rather than by state so the mapping lives in
+// one place (sellerStats) and this component only has to paint what it is handed.
+const FILL_CLASS = {
+  sold: css.trackFillSold,
+  delivered: css.trackFillDelivered,
+  confirmed: css.trackFillConfirmed,
+  disputed: css.trackFillDisputed,
+  canceled: css.trackFillCanceled,
+};
+
+// Stages that get a line of explanation under the bar - the two where a seller's next question is
+// "so where is my money?".
+const HAS_NOTE = ['confirmed', 'disputed'];
+
 const ProgressTracker = props => {
   const { progress } = props;
-  const isDisputed = progress.key === 'disputed';
-  const isCanceled = progress.key === 'canceled';
 
   return (
     <div className={css.tracker}>
       <div className={css.trackBg}>
         <div
-          className={
-            isDisputed ? css.trackFillDisputed : isCanceled ? css.trackFillCanceled : css.trackFill
-          }
+          className={FILL_CLASS[progress.tone] || css.trackFillSold}
           style={{ width: `${progress.percent}%` }}
         />
       </div>
       <div className={css.trackLabels}>
         <span className={css.trackPercent}>{progress.percent}%</span>
-        <span className={isDisputed ? css.statusDisputed : css.status}>
+        <span className={progress.key === 'disputed' ? css.statusDisputed : css.status}>
           <FormattedMessage id={`SalesPage.status.${progress.key}`} />
         </span>
       </div>
+      {HAS_NOTE.includes(progress.key) ? (
+        <p className={progress.key === 'disputed' ? css.noteDisputed : css.note}>
+          <FormattedMessage id={`SalesPage.note.${progress.key}`} />
+        </p>
+      ) : null}
     </div>
   );
 };
 
-const SaleCard = props => {
+export const SaleCard = props => {
   const { tx } = props;
   const intl = useIntl();
   const progress = saleProgress(tx);
@@ -80,7 +95,7 @@ const SaleCard = props => {
 
       <ProgressTracker progress={progress} />
 
-      <NamedLink className={css.cardLink} name="SalePage" params={{ id: tx.id.uuid }}>
+      <NamedLink className={css.cardLink} name="SaleDetailsPage" params={{ id: tx.id.uuid }}>
         <FormattedMessage id="SalesPage.viewSale" />
       </NamedLink>
     </li>

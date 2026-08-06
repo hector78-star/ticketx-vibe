@@ -39,6 +39,60 @@ const COMPLETED_STATES = ['completed', 'reviewed', 'reviewed-by-customer', 'revi
 export const isCompletedSale = tx => COMPLETED_STATES.includes(transactionState(tx));
 
 /**
+ * Where a seller's reputation lives so that *other* people can see it.
+ *
+ * Reputation needs a completed-sales count, and the Marketplace API will not give you one for
+ * anybody but yourself - `transactions.query` is scoped to the requesting user, and there is no
+ * Integration API set up. So a buyer looking at a ticket cannot compute whether that seller is
+ * verified.
+ *
+ * The way round it: the seller's own client already computes the figure when they open their sales
+ * page, so it publishes the result to their profile's public data. Anyone can then read reputation
+ * straight off a listing's author with no extra request - which also keeps ticket lists to a single
+ * query rather than one per seller.
+ *
+ * The trade-off is staleness: a seller who never opens their dashboard publishes nothing and reads
+ * as new. That is the honest failure direction - it understates a good seller rather than
+ * overstating an unproven one. Replace this with an Integration API job if one is ever set up.
+ */
+export const SELLER_STATS_KEY = 'sellerStats';
+
+/** Reputation as published on a user's profile, or null when they have never published any. */
+export const readSellerStats = user => {
+  const stats = user?.attributes?.profile?.publicData?.[SELLER_STATS_KEY];
+  if (!stats || typeof stats !== 'object') {
+    return null;
+  }
+  const { averageRating, reviewCount, completedSalesCount, isVerified } = stats;
+  return {
+    averageRating: typeof averageRating === 'number' ? averageRating : null,
+    reviewCount: typeof reviewCount === 'number' ? reviewCount : 0,
+    completedSalesCount: typeof completedSalesCount === 'number' ? completedSalesCount : 0,
+    isVerified: isVerified === true,
+  };
+};
+
+/** Only the four figures, rounded, so a rerun with unchanged reputation writes nothing. */
+export const sellerStatsPayload = stats => ({
+  averageRating:
+    typeof stats?.averageRating === 'number' ? Math.round(stats.averageRating * 100) / 100 : null,
+  reviewCount: stats?.reviewCount || 0,
+  completedSalesCount: stats?.completedSalesCount || 0,
+  isVerified: stats?.isVerified === true,
+});
+
+export const sellerStatsChanged = (published, fresh) => {
+  const a = published || {};
+  const b = fresh || {};
+  return (
+    a.averageRating !== b.averageRating ||
+    a.reviewCount !== b.reviewCount ||
+    a.completedSalesCount !== b.completedSalesCount ||
+    a.isVerified !== b.isVerified
+  );
+};
+
+/**
  * @param {Array} reviews reviews where the seller is the subject
  * @param {number} completedSalesCount
  */
@@ -60,31 +114,39 @@ export const computeSellerStats = (reviews = [], completedSalesCount = 0) => {
 };
 
 /**
- * Where a transaction sits in the money's journey, for the progress tracker.
+ * Where a transaction sits in the money's journey, for the payout progress tracker.
  *
- * pending (funds held) -> confirmed (receipt confirmed or auto-released) -> closed (paid out).
- * disputed is deliberately not a point on that line: it is a branch, shown distinctly. canceled is
- * included because the process auto-cancels after 14 days, so it is a real outcome, not an edge.
+ * sold (funds held) -> delivered (seller says handed over) -> confirmed (buyer confirmed receipt,
+ * payout created). `tone` drives the bar colour: yellow, orange, green respectively.
+ *
+ * disputed is deliberately not a point on that line - it is a branch off it, shown red, because the
+ * payout is frozen rather than progressing. canceled is included because the process auto-cancels
+ * after 14 days, so a refunded sale is a real outcome, not an edge case; showing it as `sold` would
+ * tell a seller money is still coming when it has already gone back to the buyer.
+ *
+ * Everything from `received` onwards collapses into `confirmed`. The payout is created on
+ * mark-received, and `auto-complete` fires immediately after it, so `received` and `completed` are
+ * indistinguishable in practice and splitting them would only ever show one of them.
  */
 export const SALE_PROGRESS = {
-  pending: { key: 'pending', percent: 33 },
-  confirmed: { key: 'confirmed', percent: 66 },
-  closed: { key: 'closed', percent: 100 },
-  disputed: { key: 'disputed', percent: 66 },
-  canceled: { key: 'canceled', percent: 100 },
+  sold: { key: 'sold', percent: 25, tone: 'sold' },
+  delivered: { key: 'delivered', percent: 60, tone: 'delivered' },
+  confirmed: { key: 'confirmed', percent: 100, tone: 'confirmed' },
+  disputed: { key: 'disputed', percent: 60, tone: 'disputed' },
+  canceled: { key: 'canceled', percent: 100, tone: 'canceled' },
 };
 
 const STATE_TO_PROGRESS = {
-  // Money captured and held; nobody has confirmed anything yet.
-  purchased: SALE_PROGRESS.pending,
-  delivered: SALE_PROGRESS.pending,
-  // Buyer confirmed receipt (or it auto-released): payout triggered.
+  // Money captured and held; the seller has not said they handed the ticket over.
+  purchased: SALE_PROGRESS.sold,
+  // Seller marked it delivered; waiting on the buyer.
+  delivered: SALE_PROGRESS.delivered,
+  // Buyer confirmed receipt (or it auto-released): payout created.
   received: SALE_PROGRESS.confirmed,
-  // Terminal, paid out.
-  completed: SALE_PROGRESS.closed,
-  reviewed: SALE_PROGRESS.closed,
-  'reviewed-by-customer': SALE_PROGRESS.closed,
-  'reviewed-by-provider': SALE_PROGRESS.closed,
+  completed: SALE_PROGRESS.confirmed,
+  reviewed: SALE_PROGRESS.confirmed,
+  'reviewed-by-customer': SALE_PROGRESS.confirmed,
+  'reviewed-by-provider': SALE_PROGRESS.confirmed,
   // Branches.
   disputed: SALE_PROGRESS.disputed,
   canceled: SALE_PROGRESS.canceled,
@@ -93,8 +155,12 @@ const STATE_TO_PROGRESS = {
 
 export const saleProgress = tx => {
   const state = transactionState(tx);
-  return STATE_TO_PROGRESS[state] || SALE_PROGRESS.pending;
+  return STATE_TO_PROGRESS[state] || SALE_PROGRESS.sold;
 };
+
+/** States where the buyer still has something to do: confirm receipt, or dispute. */
+export const buyerActionPending = progress =>
+  progress?.key === 'sold' || progress?.key === 'delivered';
 
 /** True once a buyer has paid - i.e. the transaction belongs on the sales/payouts list. */
 export const isPaidTransaction = tx => {

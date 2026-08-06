@@ -10,7 +10,7 @@ import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { createImageVariantConfig } from '../../util/sdkLoader';
 import { storableError } from '../../util/errors';
 import * as log from '../../util/log';
-import { saleProgress } from '../../util/sellerStats';
+import { saleProgress, buyerActionPending } from '../../util/sellerStats';
 import { formatEventDate } from '../../util/events';
 import { useEventImages, withEventImage } from '../../hooks/useEventImages';
 
@@ -88,7 +88,8 @@ const TicketCard = props => {
   const eventDate = formatEventDate(publicData.eventDate);
 
   // Confirming receipt is the buyer's one outstanding action, so say so plainly while it applies.
-  const needsAction = progress.key === 'pending';
+  // It applies both before and after the seller marks delivery - the buyer can confirm from either.
+  const needsAction = buyerActionPending(progress);
 
   return (
     <li className={css.card}>

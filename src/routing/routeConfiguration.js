@@ -20,6 +20,7 @@ const EditListingPage = loadable(() => import(/* webpackChunkName: "EditListingP
 const AdminEventsPage = loadable(() => import(/* webpackChunkName: "AdminEventsPage" */ '../containers/AdminEventsPage/AdminEventsPage'));
 const CurrentListingsPage = loadable(() => import(/* webpackChunkName: "CurrentListingsPage" */ '../containers/SellPage/CurrentListingsPage'));
 const SalesPage = loadable(() => import(/* webpackChunkName: "SalesPage" */ '../containers/SellPage/SalesPage'));
+const AlertsPage = loadable(() => import(/* webpackChunkName: "AlertsPage" */ '../containers/AlertsPage/AlertsPage'));
 const MyTicketsPage = loadable(() => import(/* webpackChunkName: "MyTicketsPage" */ '../containers/MyTicketsPage/MyTicketsPage'));
 const SellPage = loadable(() => import(/* webpackChunkName: "SellPage" */ '../containers/SellPage/SellPage'));
 const HomePage = loadable(() => import(/* webpackChunkName: "HomePage" */ '../containers/HomePage/HomePage'));
@@ -142,6 +143,16 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       authPage: 'LoginPage',
       component: SalesPage,
       loadData: pageDataLoadingAPI.SalesPage.loadData,
+    },
+    {
+      // TicketX: events this buyer is waiting on a ticket for. The counterpart to
+      // /my-tickets - that is what you own, this is what you are waiting for - and the
+      // place where turning alerts off lives.
+      path: '/alerts',
+      name: 'AlertsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: AlertsPage,
     },
     {
       path: '/my-tickets',

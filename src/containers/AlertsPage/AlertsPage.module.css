@@ -1,0 +1,128 @@
+.main {
+  max-width: 1128px;
+  margin: 0 auto;
+  padding: 0 24px 64px 24px;
+}
+
+.title {
+  margin: 24px 0 8px 0;
+}
+
+.subtitle {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 32px 0;
+  color: var(--colorGrey600);
+}
+
+.notice {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey600);
+}
+
+/* The empty state is the page nearly everybody sees, so it points somewhere rather than
+   apologising for having nothing. Lead line, one line of explanation, one action. */
+.empty {
+  padding: 8px 0 0 0;
+  max-width: 480px;
+}
+
+.emptyLead {
+  font-family: var(--fontFamilyDisplay, var(--fontFamily));
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.15;
+  color: var(--colorGrey900);
+  margin: 0 0 8px 0;
+}
+
+.emptyBody {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey600);
+  margin: 0 0 20px 0;
+}
+
+.emptyAction {
+  composes: ctaLink from global;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ruled list, matching the rhythm used by the sell dashboard and the order receipt. */
+.row {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+.rowImageWrapper {
+  position: relative;
+  flex: 0 0 120px;
+  height: 80px;
+  background-color: var(--colorGrey100);
+  overflow: hidden;
+}
+
+.rowImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rowBody {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-family: var(--fontFamilyDisplay, var(--fontFamily));
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--colorGrey900);
+  margin: 0 0 2px 0;
+}
+
+.rowMeta {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 12px 0;
+  color: var(--colorGrey600);
+}
+
+.rowStats {
+  margin: 0 0 12px 0;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.rowPrimaryAction {
+  composes: ctaLink from global;
+}
+
+@media (max-width: 549px) {
+  .row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rowImageWrapper {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 140px;
+  }
+}

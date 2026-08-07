@@ -192,6 +192,11 @@ const TopbarMobileMenu = props => {
             student needs at the door of a ball, so it must not sit below Profile settings. */}
         <ul className={css.productLinksWrapper}>
           {buyLink}
+          <li className={classNames(css.navigationLink, currentPageClass('AlertsPage'))}>
+            <NamedLink name="AlertsPage">
+              <FormattedMessage id="TopbarMobileMenu.alertsLink" />
+            </NamedLink>
+          </li>
           <li className={classNames(css.navigationLink, currentPageClass('MyTicketsPage'))}>
             <NamedLink name="MyTicketsPage">
               <FormattedMessage id="TopbarMobileMenu.myTicketsLink" />

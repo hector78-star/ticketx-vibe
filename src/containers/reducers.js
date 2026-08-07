@@ -8,6 +8,7 @@ import ContactDetailsPage from './ContactDetailsPage/ContactDetailsPage.duck';
 import EditListingPage from './EditListingPage/EditListingPage.duck';
 import adminEvents from './AdminEventsPage/AdminEventsPage.duck';
 import sell from './SellPage/SellPage.duck';
+import { alertsReducer as alerts } from './AlertsPage/AlertsPage';
 import { myTicketsReducer as myTickets } from './MyTicketsPage/MyTicketsPage';
 import eventPage from './EventPage/EventPage.duck';
 import InboxPage from './InboxPage/InboxPage.duck';
@@ -32,6 +33,7 @@ export {
   EditListingPage,
   adminEvents,
   sell,
+  alerts,
   myTickets,
   eventPage,
   InboxPage,

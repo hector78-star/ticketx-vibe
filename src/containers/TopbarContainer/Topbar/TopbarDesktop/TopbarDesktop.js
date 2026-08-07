@@ -46,6 +46,14 @@ const BrowseLinks = () => (
   </>
 );
 
+const AlertsLink = () => (
+  <NamedLink className={css.topbarLink} name="AlertsPage">
+    <span className={css.topbarLinkLabel}>
+      <FormattedMessage id="TopbarDesktop.alerts" />
+    </span>
+  </NamedLink>
+);
+
 const MyTicketsLink = () => (
   <NamedLink className={css.topbarLink} name="MyTicketsPage">
     <span className={css.topbarLinkLabel}>
@@ -224,6 +232,7 @@ const TopbarDesktop = props => {
   const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
+  const alertsLinkMaybe = authenticatedOnClientSide ? <AlertsLink /> : null;
   const myTicketsLinkMaybe = authenticatedOnClientSide ? <MyTicketsLink /> : null;
   const sellLinkMaybe = authenticatedOnClientSide ? <SellLink /> : null;
 
@@ -291,6 +300,7 @@ const TopbarDesktop = props => {
       />
 
       <BrowseLinks />
+      {alertsLinkMaybe}
       {myTicketsLinkMaybe}
       {sellLinkMaybe}
       {inboxLinkMaybe}

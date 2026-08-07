@@ -7,12 +7,19 @@ import { useConfiguration } from '../../context/configurationContext';
 import { createSlug } from '../../util/urlHelpers';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { searchEvents } from '../../ducks/events.duck';
+import {
+  fetchWatches,
+  watchEvent,
+  readPendingWatch,
+  clearPendingWatch,
+} from '../../ducks/watch.duck';
 import { eventSummary, formatEventDate, hasAdminConfigured } from '../../util/events';
 
 import {
   Page,
   LayoutSingleColumn,
   EventStats,
+  WatchButton,
   H1,
   H3,
   NamedLink,
@@ -105,6 +112,7 @@ const EventCard = props => {
           >
             <FormattedMessage id="EventsPage.viewTickets" />
           </NamedLink>
+          <WatchButton eventId={event.id} eventTitle={event.title} eventAuthorId={event.authorId} />
         </div>
       </div>
     </article>
@@ -177,6 +185,28 @@ export const EventsPageComponent = () => {
       dispatch(searchEvents({ keywords, config }));
     }
   }, [dispatch, config, keywords]);
+
+  // Which events this user already has alerts on, so the control renders in the right state
+  // rather than flashing "alert me" on something they are already watching. Fetched once.
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const watchesFetched = useSelector(state => state.watch.fetched);
+  useEffect(() => {
+    if (isAuthenticated && !watchesFetched) {
+      dispatch(fetchWatches());
+    }
+  }, [dispatch, isAuthenticated, watchesFetched]);
+
+  // A watch intended before signing up. Tapping "alert me" signed out sends you to signup;
+  // this is the other half, applied once you land back. Without it the intent is dropped at
+  // exactly the moment a new student was motivated enough to act.
+  useEffect(() => {
+    if (!isAuthenticated || !watchesFetched) return;
+    const pendingId = readPendingWatch();
+    if (pendingId) {
+      clearPendingWatch();
+      dispatch(watchEvent({ eventId: pendingId }));
+    }
+  }, [dispatch, isAuthenticated, watchesFetched]);
 
   const onSearch = next => {
     const search = next ? `?keywords=${encodeURIComponent(next)}` : '';

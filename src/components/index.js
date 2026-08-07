@@ -133,6 +133,7 @@ export { default as OrderBreakdown } from './OrderBreakdown/OrderBreakdown';
 export { default as OrderPanel } from './OrderPanel/OrderPanel';
 export { default as ListingCard } from './ListingCard/ListingCard';
 export { default as EventStats } from './EventStats/EventStats';
+export { default as WatchButton } from './WatchButton/WatchButton';
 export { default as TicketCard } from './TicketCard/TicketCard';
 export { default as SellerReputation } from './SellerReputation/SellerReputation';
 export { default as PillChoice } from './PillChoice/PillChoice';

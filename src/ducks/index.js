@@ -16,6 +16,7 @@ import paymentMethods from './paymentMethods.duck';
 import stripe from './stripe.duck';
 import stripeConnectAccount from './stripeConnectAccount.duck';
 import user from './user.duck';
+import watch from './watch.duck';
 
 export {
   auth,
@@ -30,4 +31,5 @@ export {
   stripe,
   stripeConnectAccount,
   user,
+  watch,
 };

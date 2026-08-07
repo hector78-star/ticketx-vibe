@@ -143,3 +143,11 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Sell CTA and the alert control sit together under the stats. */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}

@@ -9,11 +9,13 @@ import { createImageVariantConfig } from '../../util/sdkLoader';
 import { storableError } from '../../util/errors';
 import * as log from '../../util/log';
 import { eventSummary, formatEventDate } from '../../util/events';
+import { fetchWatches } from '../../ducks/watch.duck';
 
 import {
   Page,
   LayoutSingleColumn,
   EventStats,
+  WatchButton,
   H1,
   NamedLink,
   ResponsiveImage,
@@ -139,9 +141,9 @@ const AlertRow = props => {
           <NamedLink className={css.rowPrimaryAction} name="EventPage" params={linkParams}>
             <FormattedMessage id="AlertsPage.viewEvent" />
           </NamedLink>
-          {/* Turning alerts off needs the default-watch process to exist before it can do
-              anything, so it is not wired yet. Shipping a dead button would be worse than
-              shipping none: see the note at the top of this file. */}
+          {/* Same control as the browse card and the event page. Turning an alert off from
+              the list it appears in is the whole reason this page exists. */}
+          <WatchButton eventId={event.id} eventTitle={event.title} eventAuthorId={event.authorId} />
         </div>
       </div>
     </li>
@@ -165,6 +167,8 @@ export const AlertsPageComponent = () => {
 
   useEffect(() => {
     dispatch(fetchAlerts({ config }));
+    // Also populate the shared watch state, so WatchButton on each row knows it is on.
+    dispatch(fetchWatches());
   }, [dispatch, config]);
 
   const body = error ? (

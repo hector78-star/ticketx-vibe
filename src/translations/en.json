@@ -1786,5 +1786,9 @@
   "UserNav.accountSettings": "Account settings",
   "UserNav.profileSettings": "Profile settings",
   "UserNav.screenreader.userNav": "User profile navigation",
-  "UserNav.yourListings": "Your listings"
+  "UserNav.yourListings": "Your listings",
+  "WatchButton.watch": "Alert me",
+  "WatchButton.watchAria": "Alert me when a ticket drops for {title}",
+  "WatchButton.watching": "Alerts on",
+  "WatchButton.watchingAria": "Alerts are on for {title}. Turn them off"
 }

@@ -1,0 +1,35 @@
+/* Composes the design system's CTA tokens rather than restyling a button. Both already
+   carry a 44px tap target as a ::after overlay, so there is nothing to add here. */
+
+.quiet {
+  composes: ctaLinkQuiet from global;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.loud {
+  composes: ctaLink from global;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Watching state: same slot, same width class, underline dropped. Nothing on the card
+   shifts when it flips, which matters because the flip is optimistic and happens instantly
+   under the reader's finger. */
+.isWatching {
+  color: var(--colorGrey600);
+}
+
+.isWatching::before {
+  display: none;
+}
+
+.quiet:focus-visible,
+.loud:focus-visible {
+  outline: 2px solid var(--marketplaceColor);
+  outline-offset: 2px;
+}

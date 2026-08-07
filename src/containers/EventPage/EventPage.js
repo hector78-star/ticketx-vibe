@@ -1,15 +1,22 @@
-import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { FormattedMessage } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { eventSummary, formatEventDate } from '../../util/events';
+import {
+  fetchWatches,
+  watchEvent,
+  readPendingWatch,
+  clearPendingWatch,
+} from '../../ducks/watch.duck';
 
 import {
   Page,
   LayoutSingleColumn,
   EventStats,
+  WatchButton,
   H1,
   H2,
   TicketCard,
@@ -31,6 +38,28 @@ import css from './EventPage.module.css';
  */
 export const EventPageComponent = () => {
   const config = useConfiguration();
+  const dispatch = useDispatch();
+
+  // See EventsPage: the alert control needs to know what is already watched.
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const watchesFetched = useSelector(state => state.watch.fetched);
+  useEffect(() => {
+    if (isAuthenticated && !watchesFetched) {
+      dispatch(fetchWatches());
+    }
+  }, [dispatch, isAuthenticated, watchesFetched]);
+
+  // A watch intended before signing up. Tapping "alert me" signed out sends you to signup;
+  // this is the other half, applied once you land back. Without it the intent is dropped at
+  // exactly the moment a new student was motivated enough to act.
+  useEffect(() => {
+    if (!isAuthenticated || !watchesFetched) return;
+    const pendingId = readPendingWatch();
+    if (pendingId) {
+      clearPendingWatch();
+      dispatch(watchEvent({ eventId: pendingId }));
+    }
+  }, [dispatch, isAuthenticated, watchesFetched]);
 
   const { eventId, ticketIds, notFound, inProgress, error } = useSelector(state => state.eventPage);
   // Derive under useMemo: getListingsById returns a new array each call.
@@ -120,9 +149,16 @@ export const EventPageComponent = () => {
                 currency={config.currency}
                 keepSoldOnMobile
               />
-              <NamedLink className={css.sellCta} name="NewListingPage">
-                <FormattedMessage id="EventPage.sellCta" />
-              </NamedLink>
+              <div className={css.headerActions}>
+                <NamedLink className={css.sellCta} name="NewListingPage">
+                  <FormattedMessage id="EventPage.sellCta" />
+                </NamedLink>
+                <WatchButton
+                  eventId={event.id}
+                  eventTitle={event.title}
+                  eventAuthorId={event.authorId}
+                />
+              </div>
             </div>
           </div>
         ) : null}

@@ -90,7 +90,10 @@ export const queryEvents = (sdk, config, params = {}) => {
     pub_listingType: EVENT_LISTING_TYPE,
     sort: '-pub_eventDate',
     ...fromToday,
-    include: ['images'],
+    // author so the UI can tell whether the current user created this event: Sharetribe
+    // refuses transactions where customer and listing author are the same person, which
+    // includes setting an alert on an event you added yourself.
+    include: ['author', 'images'],
     'fields.listing': EVENT_FIELDS,
     ...imageParams(config),
     ...rest,

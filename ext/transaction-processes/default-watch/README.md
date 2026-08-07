@@ -1,7 +1,12 @@
-# default-watch — NOT DEPLOYED
+# default-watch — CREATED, NOT YET WIRED
 
-**Status: authored, never pushed.** Nothing in the app uses it yet, and no version of it
-exists on the marketplace. Pushing is a deliberate step — see below.
+**Status: version 1 exists on `ticketx1-dev`.** Created 2026-08-07 and verified by pulling
+it back: the `.edn` is semantically identical to this directory and both templates round-trip
+byte-identical (after normalising CRLF). The rendered email was previewed end to end and every
+protected-data key resolves.
+
+**Nothing uses it yet.** No listing type points at this process, so no watch can be initiated
+and no user is affected. See "Still to do" below.
 
 ## What it is
 
@@ -88,24 +93,40 @@ No webfonts: email clients will not load Instrument Serif reliably, so the one d
 falls back to Georgia and everything else to Helvetica/Arial. Left-aligned single column,
 hairline rules only, exactly one button.
 
-## Before pushing
+## Still to do before a single alert can fire
 
-1. **This is a live-marketplace change.** `flex-cli process push` creates the process on the
-   marketplace. It is new, so it cannot revert `default-purchase` templates — the
-   template-clobber risk in `HANDOFF.md` §5.10 applies to re-pushing an *existing* process,
-   not to this one.
-2. Add a listing type using this process for the EVENT listing type, or watches cannot be
-   initiated against events.
-3. **Verify `EventPage` does not start rendering `OrderPanel`** once event listings become
-   transactable. This is task E24 and is easy to miss.
-4. Push templates and process together, and check the rendered email in Console before
-   letting the fan-out run at real watchers.
-5. Enable the fan-out **last**, so a broken process never fires at real people.
+1. **Point a listing type at this process.** The EVENT listing type in
+   `src/config/configListing.js` needs a `transactionType` using `default-watch`, or
+   `transactions.initiate` has nothing to initiate against. Until then the ALERT ME control
+   cannot be wired.
+2. **Verify `EventPage` does not start rendering `OrderPanel`** once event listings become
+   transactable. Task E24, and easy to miss.
+3. **Integration API credentials.** The fan-out queries watchers and runs operator
+   transitions, and only the Integration API can do either.
+4. **Build the notify endpoint and sweeper**, honouring the transition ceiling above.
+5. **Enable the fan-out last**, so a half-built one never fires at real people.
+
+## Commands
+
+`create` is for a process that does not exist; `push` only **updates** an existing one. This
+process was created with:
+
+```sh
+flex-cli process create --path ext/transaction-processes/default-watch \
+  --process default-watch -m ticketx1-dev
+```
+
+Subsequent changes use `push`, which adds a new version:
 
 ```sh
 flex-cli process push --path ext/transaction-processes/default-watch \
-  --process default-watch -m <marketplace-id>
+  --process default-watch -m ticketx1-dev
 ```
 
-Note `flex-cli process --path` validates the `.edn` but **not** template-directory
-completeness — a push can succeed and ship a broken template (`HANDOFF.md` §5.10).
+Two things to know. `flex-cli process --path` validates the `.edn` but **not**
+template-directory completeness, so a push can succeed and ship a broken template
+(`HANDOFF.md` §5.10). And when diffing a pulled copy against this directory, templates are
+stored with CRLF while the repo uses LF — compare with
+`diff <(tr -d '\r' < a) <(tr -d '\r' < b)` before believing a difference is real.
+
+**A Sharetribe process cannot be deleted.** Versions accumulate; nothing is ever removed.

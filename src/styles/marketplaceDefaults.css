@@ -1656,6 +1656,7 @@ textarea {
   text-transform: uppercase;
   -webkit-font-smoothing: subpixel-antialiased;
 
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -1669,6 +1670,23 @@ textarea {
   cursor: pointer;
   text-decoration: none;
   transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* The tap target, extended past the ink.
+ *
+ * These render about 25px tall, which is a comfortable size to read and a miserable one to hit
+ * with a thumb - well under the 44px minimum. Padding cannot fix it: the hairline underline is
+ * drawn on the element's own bottom edge, so any vertical padding pushes the rule away from the
+ * word it belongs to. An overlay gives the finger 44px while the ink stays where it was. */
+.ctaLink::after,
+.ctaLinkQuiet::after {
+  content: '';
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
 }
 
 .ctaLink {

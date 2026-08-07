@@ -533,6 +533,10 @@ const EditListingDetailsForm = props => (
               step={ticketStep}
               questionId={TICKET_STEPS[ticketStep].questionId}
               hintId={TICKET_STEPS[ticketStep].hintId}
+              // The panel suppresses its own "Listing details" heading while this flow is on
+              // screen, so the step's question is the page's h1. Without this the page had no
+              // h1 at all - a screen-reader user landing here got a document with no title.
+              as="h1"
               onBack={
                 ticketStep > 1
                   ? () => setTicketStep(ticketStep - 1)

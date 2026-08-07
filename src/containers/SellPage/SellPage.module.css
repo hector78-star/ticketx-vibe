@@ -6,42 +6,66 @@
 }
 
 .title {
-  margin: 24px 0 32px 0;
+  margin: 24px 0 40px 0;
 }
 
+/* A ruled list, not a three-across card grid.
+ *
+ * Three equal bordered boxes, each with a title and a two-line description, is the single most
+ * recognisable AI-generated layout there is - and this page sits one click from a homepage that is
+ * edge-to-edge and cardless. Stacked rows separated by hairlines say the same thing in the
+ * marketplace's own voice, and they read the same on a phone as on a desktop instead of collapsing
+ * into a column of boxes. */
 .options {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .options {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--colorGrey100);
 }
 
 .option {
-  display: block;
-  padding: 24px;
-  border: 1px solid var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--colorGrey100);
   text-decoration: none;
   color: inherit;
-  transition: box-shadow var(--transitionStyleButton, 0.2s ease-in);
+}
+
+@media (min-width: 768px) {
+  /* Title left, description right: the same label/value rhythm as the order receipt and the
+     listing-flow summary, so a row here reads like a row anywhere else in the app. */
+  .option {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 40px;
+  }
 }
 
 .option:hover {
-  box-shadow: var(--boxShadowListingCard);
   text-decoration: none;
 }
 
+.option:hover .optionTitle {
+  color: var(--marketplaceColor);
+}
+
 .optionTitle {
-  margin: 0 0 8px 0;
+  margin: 0;
+  transition: color 0.12s ease;
 }
 
 .optionBody {
-  composes: marketplaceTinyFontStyles from global;
+  composes: marketplaceBodyFontStyles from global;
   margin: 0;
-  color: var(--colorGrey500);
+  /* grey600, not grey500: the lighter grey measures 3.97:1 on white and fails AA. */
+  color: var(--colorGrey600);
+}
+
+@media (min-width: 768px) {
+  .optionBody {
+    text-align: right;
+    max-width: 40ch;
+  }
 }

@@ -1433,15 +1433,22 @@ textarea {
 }
 
 /* Modal title */
+/* Modal titles are headings and belong on the display face like every other heading. Bold Inter at
+   30px was the last place the stock template's voice was still speaking - and modals are exactly
+   where a marketplace asks for trust, so they should not look borrowed. Instrument Serif ships
+   weight 400 only; asking for bold here gets a synthesised fake bold. */
 .marketplaceModalTitleStyles {
-  font-weight: var(--fontWeightBold);
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
   font-size: 30px;
-  line-height: 36px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   margin: 0;
 
   @media (--viewportMedium) {
-    font-weight: var(--fontWeightBold);
-    line-height: 40px;
+    font-size: 34px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
     margin: 0;
   }
 }

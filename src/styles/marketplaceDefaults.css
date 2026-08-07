@@ -299,58 +299,63 @@ a:hover {
   cursor: pointer;
 }
 
+/* The bare heading ELEMENTS, kept in step with the .h1-.h6 classes below.
+ *
+ * Only the classes were converted to the display face at first, which left every plain <h1> in the
+ * app rendering 64px Inter at weight 900 - the stock template's voice, on the same page as headings
+ * that had moved to Instrument Serif. Two heading systems on one page is worse than either. Both
+ * sets must change together; if you edit one, edit the other. */
 h1 {
-  font-size: 24px;
-  line-height: 24px;
-  font-weight: var(--fontWeightBlack);
-  padding: 3px 0 3px 0;
-  /* margin-top + n * line-height + margin-bottom => x * 6px */
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  padding: 0;
   margin-top: 18px;
   margin-bottom: 18px;
 
   @media (--viewportMedium) {
-    font-size: 64px;
-    line-height: 64px;
-    padding: 0;
-    /* margin-top + n * line-height + margin-bottom => x * 8px */
+    font-size: 48px;
+    letter-spacing: -0.025em;
     margin-top: 24px;
     margin-bottom: 24px;
   }
 }
 
 h2 {
-  font-size: 21px;
-  line-height: 24px;
-  font-weight: var(--fontWeightBold);
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
 
-  padding: 4px 0 2px 0;
-  /* x * 6px */
+  padding: 0;
   margin-top: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 
   @media (--viewportMedium) {
-    font-size: 40px;
-    line-height: 56px;
-    padding: 5px 0 3px 0;
-    /* x * 8px */
+    font-size: 36px;
+    letter-spacing: -0.02em;
     margin-top: 24px;
     margin-bottom: 16px;
   }
 }
 
 h3 {
-  font-weight: var(--fontWeightBold);
-  font-size: 18px;
-  line-height: 24px;
-  /* x * 6px */
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+
   margin-top: 18px;
   margin-bottom: 12px;
 
   @media (--viewportMedium) {
-    font-size: 30px;
-    line-height: 40px;
-    padding: 1px 0 7px 0;
-    /* x * 8px */
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    padding: 0;
     margin-top: 16px;
     margin-bottom: 16px;
   }

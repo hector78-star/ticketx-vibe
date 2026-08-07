@@ -24,6 +24,17 @@
   opacity: 0.7;
 }
 
+/* Only rendered where the event is not already on screen - the browse page's other-tickets
+   list. Display face, because this is the name of the thing. */
+.eventName {
+  font-family: var(--fontFamilyDisplay, var(--fontFamily));
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--colorGrey900);
+  margin: 0 0 6px 0;
+}
+
 .top {
   display: flex;
   align-items: baseline;

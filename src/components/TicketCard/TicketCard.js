@@ -92,10 +92,11 @@ const PriceLine = props => {
  * @param {Object} props
  * @param {Object} props.listing ticket listing, with `author` included
  * @param {number?} props.faceValue the event's face value in pence, for the price comparison
+ * @param {boolean} props.showEventName render the event this ticket is for
  * @param {string?} props.className
  */
 const TicketCard = props => {
-  const { listing, faceValue, className } = props;
+  const { listing, faceValue, showEventName = false, className } = props;
   const intl = useIntl();
 
   const { title, price, publicData } = listing?.attributes || {};
@@ -109,6 +110,12 @@ const TicketCard = props => {
         name="ListingPage"
         params={{ id: listing.id.uuid, slug: createSlug(title || '') }}
       >
+        {/* The event page does not need this - the event is pictured and titled directly
+            above - but the browse page lists tickets for seller-created events with no event
+            header anywhere, where an unnamed ticket is just a price with no context. The
+            ticket's title IS the event name: EventPicker sets it when the seller picks. */}
+        {showEventName && title ? <p className={css.eventName}>{title}</p> : null}
+
         <div className={css.top}>
           <span className={css.ticketType}>
             {ticketTypeLabelId ? (

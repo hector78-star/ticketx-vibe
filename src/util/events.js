@@ -153,6 +153,15 @@ export const queryTicketsForEvents = async (sdk, config, eventIds, params = {}) 
   const response = await sdk.listings.query({
     pub_listingType: TICKET_LISTING_TYPE,
     pub_eventId: ids.join(','),
+    // Sold tickets are still published listings - selling one drops its stock to 0, it does
+    // not close or delete it - so without this a sold ticket sits in the list at its old
+    // price forever. Every caller of this function wants tickets somebody can actually buy:
+    // the event page's list and the browse page's "other tickets" both come through here.
+    //
+    // stockMode is left at its default of 'strict', which is what we want. Tickets always
+    // have stock defined (the ticket listing type is multipleItems), so strict matches them,
+    // and anything without stock is not a ticket and has no business in this result.
+    minStock: 1,
     // configSearch.js already defines '-price' as the "lowest price" sort.
     sort: '-price',
     perPage: TICKETS_PER_PAGE,

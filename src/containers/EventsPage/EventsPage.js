@@ -267,7 +267,7 @@ export const EventsPageComponent = () => {
           </p>
           <ul className={css.ticketGrid}>
             {directTickets.map(listing => (
-              <TicketCard key={listing.id.uuid} listing={listing} />
+              <TicketCard key={listing.id.uuid} listing={listing} showEventName />
             ))}
           </ul>
         </section>

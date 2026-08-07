@@ -1,40 +1,70 @@
 # TicketX — handoff
 
-Last updated: 2026-08-07. Ticket-resale marketplace for St Andrews students, built on the
-Sharetribe Web Template.
+Last updated: 2026-08-07 (evening). Ticket-resale marketplace for St Andrews students, built on
+the Sharetribe Web Template.
 
 The spec is `user_flows.md` in Google Drive. **Four files share that name** — the current one is
 `1yu6OlvB8hIYz--wYhf2EGhU4mGIWEyycUhOHWRSd794` (modified 2026-07-10). Pick by modified date, not
 title. There's a condensed `user_flows_abridged` too.
 
 Branch: `design-system-and-event-browsing`, pushed to
-`git@github.com:hector78-star/ticketx-vibe.git`. 18 commits ahead of `main`, no PR opened yet.
+`git@github.com:hector78-star/ticketx-vibe.git`. **33 commits ahead of `main`, no PR opened yet,
+and no code-level review has ever been run on any of it.**
+
+Product direction was settled on 2026-08-07 by CEO, engineering and design reviews. The full
+reasoning is in `~/.gstack/projects/hector78-star-ticketx-vibe/ceo-plans/2026-08-07-event-watch-and-drop-alerts.md`.
+Short version: **a community layer was considered and rejected.** Forums and matchmaking were cut;
+the product competes on liquidity and on not getting scammed. The one feature added is event
+alerts.
 
 ---
 
 ## 1. Do this first
 
-### Rotate two secrets
+### Rotate five secrets
 
-Both were pasted into chat transcripts.
+All were pasted into chat transcripts. None is committed — `.env` is gitignored and confirmed
+untracked — but the transcripts are the exposure.
 
 | Secret | Where | Action |
 |---|---|---|
-| Sharetribe client secret `f98c2af8fd…` | `.env` (gitignored, never committed) | Console → Build → Applications |
+| **Integration API secret** `27af1de0…` | `.env`, `SHARETRIBE_INTEGRATION_CLIENT_SECRET` | **Highest priority.** Not user-scoped: reads and writes the entire marketplace as operator |
+| Sharetribe Marketplace secret `f98c2af8fd…` | `.env`, `SHARETRIBE_SDK_CLIENT_SECRET` | Console → Build → Applications. Leaked twice |
 | OpenAI API key `sk-proj-zlKR…` | `~/.gstack/openai.json` (chmod 600) | platform.openai.com/api-keys |
+| Two unidentified 40-hex values | unknown | `30785bbc…` and `8aa1a477…` were pasted but match nothing in `.env`. Find what they belong to |
+
+Rotating does **not** break local development or an AI agent's ability to work: the value is read
+from `.env` at runtime, so replacing it there is the whole job.
+
+### Two marketplaces with near-identical names
+
+**This is a live trap.** There are at least two Sharetribe marketplaces:
+
+| Name | Contents | Used by |
+|---|---|---|
+| **`ticketx Dev`** (lowercase t) | 42 listings, 3 users, 14 transactions | The app, the CLI (`-m ticketx1-dev`), everything |
+| **`TicketX Dev`** (capital T) | completely empty | nothing — a stray |
+
+An Integration API application was created on the empty one by mistake. It authenticated
+correctly and returned 200 on every endpoint, so nothing errored; it simply saw no data. Wiring
+it in would have meant a fan-out that silently never sent an alert.
+
+**Delete or rename the empty one.** Otherwise this recurs.
 
 ### Delete the test data
 
-All of it is on the live marketplace:
+Still on the marketplace:
 
 | What | Detail |
 |---|---|
 | User | `claude-diag-0805@st-andrews.ac.uk` ("Diag User") |
 | Events | 2 × "Claude Test Ball", "Diag Event", "Sellers Own Event", "Style Audit Ball", "hello" |
 | Listings | "Diag Hoodie" (stock 0), "Style Audit Ball" £45, "Desk lamp" draft |
-| Transactions | 2 × Starfields, £100 and £70, Stripe test keys. One confirmed and closed. |
+| Transactions | 2 × Starfields, £100 and £70, Stripe test keys. One confirmed and closed |
+| Watch transaction | 1 × `default-watch` on Starfields, now `state/unwatched` (created while testing) |
 
-"Style Audit Ball", "Desk lamp" and "hello" came from walking the listing flow on 2026-08-06/07.
+**"hello" is visible on the browse page** in the "Other tickets" section, with its event name now
+rendered. Sold tickets are hidden from browse as of today, but they are hidden, not deleted.
 
 ### Console-only, cannot be done from code
 
@@ -44,7 +74,7 @@ All of it is on the live marketplace:
 
 ## 2. The one thing that will actually hurt you
 
-**The transaction process refunds the buyer after 14 days if nobody acts.** Verified in
+**The purchase process refunds the buyer after 14 days if nobody acts.** Verified in
 `ext/transaction-processes/default-purchase/process.edn`, which is the authoritative definition —
 `src/transactions/` only mirrors it.
 
@@ -58,71 +88,145 @@ observes nothing, and nothing prompts a seller to mark delivered. `purchased →
 refunded` is therefore the **likely** path, not an edge case. A seller can hand over a real ticket
 and lose both ticket and money.
 
-Fixing it means a custom transaction process: change `auto-cancel` to favour the seller, and add an
-event-date-based timer. Sharetribe timers key off transition timepoints, not listing data, so
-"12 hours after the event" needs a scheduled operator-driven transition. **This requires
-`flex-cli process push` — editing the `.edn` in this repo changes nothing on its own.**
+This got worse, not better, with the alerts work. The product's whole pitch is now "you will not
+get scammed here". A process that automatically refunds the buyer after a genuine handover is not
+a dent in that claim, it is the claim failing, in a town with one street.
 
-A drafted redesign sits in `ext/transaction-processes/default-purchase-proposed/` with a README
-explaining the operator-authorised payout model. **Not pushed. Not reviewed.** Hector is bringing in
-someone to own payments and dispute handling; that folder is the brief for them.
+Fixing it means a custom transaction process: change `auto-cancel` to favour the seller, and add
+an event-date-based timer. Sharetribe timers key off transition timepoints, not listing data, so
+"12 hours after the event" needs a scheduled operator-driven transition. A drafted redesign sits
+in `ext/transaction-processes/default-purchase-proposed/` with a README. **Not pushed, not
+reviewed.** Hector is bringing in someone to own payments and dispute handling; that folder is
+their brief.
 
-Related: `auto-complete` fires *immediately* on entering `received`, so the "Receipt confirmed" step
-on the sales tracker is never really seen. Add a delay if you want that state to be meaningful.
+**Note the command:** that folder would use `flex-cli process push`, which *updates* an existing
+process. `process create` is for one that does not exist. Getting this backwards wastes a
+deployment attempt.
+
+Related: `auto-complete` fires *immediately* on entering `received`, so the "Receipt confirmed"
+step on the sales tracker is never really seen.
 
 Already fixed and **pushed live as v2** (`release-1` alias moved):
-`:transition/dispute-from-purchased` — buyers can now dispute without waiting for the seller to mark
-delivered.
+`:transition/dispute-from-purchased` — buyers can dispute without waiting for the seller.
 
 ---
 
 ## 3. What works today
 
-Verified end to end in a browser against the live marketplace, not just unit tested.
+Verified in a browser against the live marketplace, not just unit tested.
 
-- **Browse** — `/events` grid, `/events/:slug/:id` with tickets cheapest-first, `Tickets` and
-  `Marketplace` tabs. Search is by *event*, not by listing.
-- **Listing flow** — one question per screen, five steps. See §4.
+- **Browse** — `/events` grid, `/events/:slug/:id` with tickets cheapest-first. Search is by
+  *event*, not by listing.
+- **Listing flow** — one question per screen, five steps. See §5.
 - **Buying** — full Stripe checkout completes. Two real purchases made.
-- **Seller dashboard** — `/sell` hub, `/sell/listings`, `/sell/sales` (payout progress bar, seller
-  rating, verified status).
+- **Seller dashboard** — `/sell` hub, `/sell/listings`, `/sell/sales`.
 - **Buyer** — `/my-tickets` with per-purchase status.
+- **Alerts** — `/alerts`, plus the control on every event card and event page. **Watch and unwatch
+  both verified end to end** with a second account: initiate → 200, state persists across reload,
+  appears on `/alerts`, unwatch → 200, gone after reload.
 - **Admin** — `/admin/events`, gated to `REACT_APP_ADMIN_USER_ID`.
-- **Signup** — restricted to `@st-andrews.ac.uk`; username derived from the email prefix.
+- **Signup** — restricted to `@st-andrews.ac.uk`.
 
-Tests: **1134 passing.** `CI=true npx jest`. `TransactionPage`, `SearchPage` and `app.test.js`
-occasionally fail in a full parallel run and pass in isolation — an environment artifact, not a real
-failure. Re-run before believing it.
+Tests: **1134 client + 184 server, all passing.** `CI=true npx jest` and
+`npx jest --roots ./server --testMatch='**/server/**/*.test.js' --testEnvironment=node`.
+`TransactionPage`, `SearchPage` and `app.test.js` occasionally fail in a full parallel run and
+pass on a re-run — an environment artifact. Re-run before believing it.
+
+### What does NOT work yet
+
+**No alert email is ever sent.** Everything up to that point is built and verified; the fan-out is
+not. See §7.
 
 ---
 
-## 4. The design system
+## 4. Event alerts — how it actually works
 
-The **homepage is the reference.** When something looks wrong elsewhere, compare it to `/` and
-match that, not the template.
+A watch **is a transaction** against the EVENT listing, using the `default-watch` process.
+
+That is not a flourish. A Sharetribe notification's `:to` must be `:actor.role/customer` or
+`:actor.role/provider` — **the two parties of that transaction.** There is no way to email a third
+party. So for the platform to email someone merely watching an event, the watcher has to be a
+customer of something. That single constraint is why this design exists, and it is also why no
+external email vendor is needed: Sharetribe handles SPF and DKIM for its own sends.
+
+```
+:transition/watch (customer)
+      │
+      ▼
+:state/watching ──────┐
+      │   ▲           │ :transition/ticket-dropped (operator, self-loop)
+      │   └───────────┘ fires the alert email to the customer
+      │
+      ├── :transition/unwatch (customer)
+      └── :transition/operator-unwatch (operator)   ← for account deletion
+                │
+                ▼
+          :state/unwatched
+```
+
+**Live on `ticketx1-dev`:** `default-watch` version 1, alias `default-watch/release-1`. Created
+with `flex-cli process create`. Verified by pulling it back and by rendering the email.
+
+Four things about this that are easy to get wrong:
+
+1. **`processAlias` is NOT bound to the listing.** The EVENT listing type stays on
+   `default-inquiry`; the watch passes `default-watch/release-1` explicitly.
+   `transactionProcessAlias` is a contract between listing, marketplace and client app, not
+   something the API enforces. **Proven empirically**, not just from docs. Consequences: existing
+   events need no migration, and events never become "transactable", so no `OrderPanel` appears on
+   a catalogue page. `configListing.js` carries the same note. **Do not "fix" this.**
+
+2. **A transaction is capped at 100 transitions.** `ticket-dropped` self-loops, so a watch on a
+   busy event burns one per alert and **dies silently at the ceiling** — no error, the watcher just
+   stops hearing anything. The fan-out must read `transactions.length` and re-create the watch past
+   ~90. The one test watch already shows `transitions used: 2`.
+
+3. **You cannot watch your own event.** Sharetribe returns
+   `409 transaction-same-author-and-customer`. That covers the admin account, which authors every
+   curated event, and any seller who added their own. `WatchButton` hides itself in that case; the
+   events query now includes `author` so it can.
+
+4. **The email carries its data as protected data.** The listing on a watch is the *event*, not the
+   ticket that dropped, so `ticket-dropped` must be given `askingPrice`, `faceValue`, `eventWhen`,
+   `ticketUrl` and `unwatchUrl`. Format prices with a real `£`.
+
+---
+
+## 5. The design system
+
+The **homepage is the reference.** When something looks wrong elsewhere, compare it to `/`.
 
 | | |
 |---|---|
-| Display | Instrument Serif, self-hosted, **weight 400 only** — asking for bold gets a synthesised fake bold |
+| Display | Instrument Serif, self-hosted, **weight 400 only** |
 | Body | Inter |
-| Accent | `#6938ef`, for the one primary action per screen, and for focus |
-| Money | **Always Inter with tabular figures.** Instrument Serif's `£` overlaps the digit after it at every kerning, tracking and feature setting tested. It is the glyph. This is a sterling marketplace, so the display face can never carry a price. |
+| Accent | `#6938ef`, for the **one** primary action per screen, and for focus |
+| Money | **Always Inter with tabular figures.** Instrument Serif's `£` overlaps the digit after it |
 | Structure | Hairline rules. No filled cards — a card only when the card *is* the interaction |
-| Fields | One bottom rule, transparent background, no box, no radius |
-| Labels | 13px, `0.04em` tracking, grey600 |
-| CTA | `.ctaLink` / `.ctaLinkQuiet` in `marketplaceDefaults.css` — small, uppercase, tracked, one hairline underline |
+| Labels | 13px, `0.04em` tracking, **grey600** |
+| CTA | `.ctaLink` / `.ctaLinkQuiet` in `marketplaceDefaults.css` — these already carry a 44px tap target via an `::after` overlay. **Do not rebuild it.** |
 
-**Headings are defined twice** in `src/styles/marketplaceDefaults.css`: bare `h1`/`h2`/`h3` element
-selectors *and* `.h1`/`.h2`/`.h3` classes used by the `H1`/`Heading` components. Edit one and you
-must edit the other, or pages render two heading systems at once. This already happened once.
+**`--colorGrey500` measures 3.97:1 on white and fails WCAG AA for small text.** It is gone from
+`EventsPage`, `TicketCard` and `EventStats`. **Still in use elsewhere** — check before copying any
+component. Also fixed today: the "under face value" green was `#27ae60` at 2.87:1, now `#157347` at
+5.87:1. `--colorFail` was measured at 4.77:1 and left alone.
 
-**`composes:` does not work in `marketplaceDefaults.css`.** It is a plain global stylesheet, not a
-CSS module, so the declaration is silently dropped and the rule renders as a bare browser default.
-Tokens defined there must spell out every property literally. CSS-module files can still
+**Headings are defined twice** in `marketplaceDefaults.css`: bare `h1`/`h2`/`h3` element selectors
+*and* `.h1`/`.h2`/`.h3` classes. Edit one and you must edit the other.
+
+**`composes:` does not work in `marketplaceDefaults.css`** — it is a plain global stylesheet, not a
+CSS module, so the declaration is silently dropped. CSS-module files can still
 `composes: ctaLink from global`.
 
-`--colorGrey500` measures **3.97:1 on white** and fails WCAG AA for small text. Replaced with
-grey600 wherever the design pass touched, but it is still in use elsewhere.
+Approved mockups, which are the reference for the alert work:
+
+| Screen | Path under `~/.gstack/projects/hector78-star-ticketx-vibe/designs/` |
+|---|---|
+| Event card + stats row | `event-card-watch-20260807/variant-B.png` |
+| Drop-alert email | `alert-email-20260807/variant-A.png` (with variant B's footer wording) |
+
+The card mockup renders prices as "GBP 65" only because the image model avoids the `£` glyph. That
+is a generation artifact. **Ship the pound sign.**
 
 ### The listing flow
 
@@ -130,119 +234,145 @@ Five steps, tickets only. Other listing types keep the stock wizard untouched.
 
 | Step | Question | Advance | Lives in |
 |---|---|---|---|
-| 0 | Listing type | on select | replaced by hidden fields once chosen; step 1's Back clears it |
+| 0 | Listing type | on select | replaced by hidden fields once chosen |
 | 1 | Which event is your ticket for? | auto, on picking | Details tab |
 | 2 | What kind of ticket is it? | auto, after a 250ms highlight | Details tab |
 | 3 | One thing to confirm | Continue | Details tab |
 | 4 | Anything the buyer should know? | Save | Details tab |
 | 5 | What's your price? | Publish | **Pricing & stock** tab |
 
-Things that are easy to get wrong here:
-
-- **Tickets route to `PRICING_AND_STOCK`, not `PRICING`.** They run on `default-purchase`. Step 5
-  work put into `EditListingPricingPanel` reaches nothing.
+- **Tickets route to `PRICING_AND_STOCK`, not `PRICING`.** Work put into `EditListingPricingPanel`
+  reaches nothing.
 - **Only the visible step's fields are mounted**, so final-form's `invalid` reflects that step
-  alone. `ticketFlowComplete` in `EditListingDetailsForm.js` re-checks the earlier answers on
-  submit, or an unattested ticket slips through.
-- **`ticketStep` is state, not derived from values.** Deriving it would bounce a seller forward the
-  moment they pressed Back.
-- **`PillChoice` radios are `pointer-events: none`** — the label is the click target. Real users are
-  fine; automation that clicks the input does nothing.
-- **The step question is the page `h1`** (`as="h1"`), because the panel hides its own heading. If
-  you re-show the panel heading, drop this or you get two h1s.
+  alone. `ticketFlowComplete` re-checks earlier answers on submit.
+- **`ticketStep` is state, not derived from values.**
+- **`PillChoice` radios are `pointer-events: none`** — the label is the click target.
+- **The step question is the page `h1`.**
 
 ---
 
-## 5. Traps in this codebase
+## 6. Traps in this codebase
 
-Each of these cost real debugging time. They will bite again.
+Each of these cost real debugging time.
 
-1. **`ownListing` vs `listing` entity types.** `ownListings.query`/`create` return entities of type
-   `ownListing`; `getListingsById` builds refs of type `listing`. The lookup silently returns
-   nothing. Caused a newly created event to vanish from the picker.
+1. **`ownListing` vs `listing` entity types.** `ownListings.query`/`create` return `ownListing`;
+   `getListingsById` builds refs of type `listing`. The lookup silently returns nothing.
 
 2. **`transaction.attributes.processState` does not exist.** Only `lastTransition` does. Derive
-   state with `getProcess(processName).getState(tx)` — see `src/util/sellerStats.js`.
+   with `getProcess(processName).getState(tx)`.
 
 3. **`pub_*` search filters are silently ignored without a server-side index.** The API accepts the
-   parameter and returns everything. Always test with a deliberately *wrong* value and check you get
-   zero results. `pub_eventId` **is** indexed now (verified both ways).
+   parameter and returns everything. Always test with a deliberately *wrong* value and check you
+   get zero results. `pub_eventId` **is** indexed.
 
-4. **Sharetribe's sort convention is inverted.** A bare field name sorts DESCENDING; the `-` prefix
-   sorts ASCENDING. So `-price` is "lowest first" and `-pub_eventDate` is "soonest first".
+4. **Sharetribe's sort convention is inverted.** A bare field name sorts DESCENDING; `-` sorts
+   ASCENDING. So `-price` is "lowest first".
 
 5. **`AUTOFILLED_TICKET_FIELDS` is a lie.** `EventPicker` writes `pub_eventTitle`, `pub_eventDate`,
-   `pub_eventTime`, `pub_venue` onto the form, but those fields are configured for the EVENT listing
-   type only, so the save path strips them. **Every ticket carries only `eventId`.** Resolve through
-   `useTicketEvent` — which is the better answer anyway, since an admin correcting a venue would
-   otherwise leave a stale copy on every ticket already listed.
+   `pub_eventTime`, `pub_venue` onto the form, but those fields are configured for the EVENT
+   listing type only, so the save path strips them. **Every ticket carries only `eventId`.**
 
-6. **`transactions.query` only returns the requesting user's own transactions.** Another seller's
-   completed-sales count is not obtainable client-side. Worked around by having each seller's own
-   client publish their stats to their profile `publicData`.
+6. **`transactions.query` only returns the requesting user's own transactions.** This is why the
+   Integration API exists in this repo at all.
 
 7. **Local listing types/fields are merged in code**, not Console, via
    `mergeLocalListingTypesAndFields()`. Deliberately off under test.
 
-8. **Listing `privateData` is readable only by the listing's author.** The server can't read it
-   either — the trusted SDK still acts as the requesting user.
+8. **Listing `privateData` is readable only by the listing's author** — via the Marketplace API.
+   The **Integration API is different**: it can read and write any listing regardless of author.
 
-9. **`/l/new` redirects to `/l/draft/00000000-…`.** Normal, not a stray form submit.
+9. **`/l/new` redirects to `/l/draft/00000000-…`.** Normal.
 
 10. **`flex-cli process --path` validates the `.edn` but not template-directory completeness.** A
-    push can succeed and ship broken email templates. Sync the repo to deployed before pushing, or
-    you silently revert live template fixes.
+    push can succeed and ship broken email templates. Also: pushed templates use CRLF while the
+    repo uses LF, so `diff -rq` reports every template as changed when nothing has. Compare with
+    `diff <(tr -d '\r' < a) <(tr -d '\r' < b)`.
+
+11. **`TICKET_LISTING_TYPE` is the string `'sell-products'`, not `'ticket'`.** "Everything else" is
+    `'sell-other'`. Neither name says what it is. `server/` cannot import from `src/` — there are
+    **zero** such imports — so the value is duplicated in `server/api-util/listingTypes.js` with a
+    test that fails if they drift. Guess wrong and the filter matches nothing, silently.
+
+12. **Selling a ticket does not close or delete the listing** — it drops stock to 0 and the listing
+    stays published. Ticket queries need `minStock: 1` or sold tickets keep appearing at their old
+    price. Fixed in `queryTicketsForEvents`, which both the event page and browse go through.
+
+13. **`TopbarDesktop` and `TopbarMobileMenu` share no source.** Every TicketX destination was added
+    to the desktop one only, so the product was unreachable on a phone for weeks. **Edit both.**
+
+14. **A Sharetribe process cannot be deleted.** Versions only accumulate.
 
 ---
 
-## 6. Next, roughly in order
+## 7. Next, roughly in order
 
-1. **Custom transaction process** — see §2. Everything else is cosmetic next to this. A specialist
-   is being brought in; `default-purchase-proposed/README.md` is their brief.
-2. **Checkout has never been walked in a browser.** It needs a second account to buy with, and the
-   only signed-in dev account owns every listing. Build one.
-3. **Listing page content** — the type and colour are on-system, but *what* a ticket listing shows
-   and in what order has never been through design. It still offers a photo gallery for a ticket
-   with no photo, and shows no event date or venue. Run `/design-shotgun` on it.
-4. **Shared topbar and footer touch targets** — profile-menu links are 24px tall, footer links 17px.
-   Both below the 44px minimum, both shared across every page.
-5. **Duplicate-event guard** — sellers can add events freely with no near-duplicate check. Two
-   identical "Claude Test Ball" entries already exist.
-6. **Quantity floor** — Current listings can't stop a seller dropping quantity below what's already
-   sold; Sharetribe stock only tracks what remains.
-7. **Spec divergences** — the spec puts date/venue on the *listing*; this build keeps them on the
-   *event*. The 80-day event-date cap (Stripe's 90-day payout ceiling) isn't implemented.
+1. **Build the alert fan-out.** The only thing standing between a working feature and a shipped
+   one. Tasks E1–E7 in `~/.gstack/projects/hector78-star-ticketx-vibe/tasks-eng-review-*.jsonl`
+   carry file paths and the decisions already made. In outline:
+   - `POST /api/notify-watchers` — author check via `getSdk(req)`, marker write **before**
+     fan-out, respond 202, then fan out detached. Never block the seller's publish.
+   - Group by `eventId`; **page `transactions.query` past 100 watchers** or watcher 101 silently
+     gets nothing.
+   - Per-watcher try/catch — one banned account must not abort the other 499.
+   - Honour the 100-transition ceiling (§4.2).
+   - Hourly sweeper as the backstop for a lost client call.
+   - Sentry via `server/log.js` (already wired) plus a per-run summary.
+2. **Custom transaction process** — see §2. A specialist is being brought in.
+3. **Rotate the secrets** and **delete the empty `TicketX Dev` marketplace** (§1).
+4. **Review this branch.** 33 commits, no PR, no code-level review.
+5. **Shared topbar and footer touch targets** — profile-menu links 24px, footer links 17px, both
+   below the 44px minimum.
+6. **Duplicate-event guard** — sellers can add events with no near-duplicate check.
+7. **Quantity floor** — nothing stops a seller dropping quantity below what is already sold.
+8. **Spec divergences** — the spec puts date/venue on the *listing*; this build keeps them on the
+   *event*. The 80-day event-date cap (Stripe's 90-day payout ceiling) is not implemented.
 
-Open judgement call: the desktop wizard side nav uses Instrument Serif, the **mobile tab strip stays
-in Inter**. The serif at 13px with negative tracking reads muddy and a compact tab bar is a
-different job from a side nav. Reverse it if you disagree.
+### Deferred deliberately
+
+`TODOS.md` holds three, with reasoning: the **fair-allocation claim draw** (the genuinely
+differentiating idea, blocked on §2), attended-only post-event rooms, and a price ceiling on
+alerts. The claim draw is the one worth protecting — the alert work already built is its substrate.
+
+Open judgement call: the desktop wizard side nav uses Instrument Serif, the **mobile tab strip
+stays in Inter.**
+
+Not yet built from the design review: the **bottom tab bar** for mobile (Buy / Alerts / My tickets
+/ Sell), the **ticket count** in "View tickets" (needs available-ticket counts plumbed to browse),
+and **hairline rules between browse cards** (grid gap used instead).
 
 ---
 
-## 7. Running it
+## 8. Running it
 
 ```bash
 yarn run dev          # localhost:3000, API proxy on 3500
-CI=true npx jest      # 1134 tests
+CI=true npx jest      # 1134 client tests
+npx jest --roots ./server --testMatch='**/server/**/*.test.js' --testEnvironment=node   # 184
 ```
 
 `.env` needs `REACT_APP_SHARETRIBE_SDK_CLIENT_ID`, `SHARETRIBE_SDK_CLIENT_SECRET`,
-`REACT_APP_STRIPE_PUBLISHABLE_KEY`, and `REACT_APP_ADMIN_USER_ID` (the account that curates events
-and sees `/admin/events`). Mapbox is deliberately unset — search is keyword-based, and the console
-warning about missing map tokens is expected.
+`REACT_APP_STRIPE_PUBLISHABLE_KEY`, `REACT_APP_ADMIN_USER_ID`, and now
+`SHARETRIBE_INTEGRATION_CLIENT_ID` / `SHARETRIBE_INTEGRATION_CLIENT_SECRET`.
+
+**Never prefix an Integration variable with `REACT_APP_`** — that inlines it into the browser
+bundle. `server/api-util/integrationSdk.js` refuses to load if you do.
+
+Mapbox is deliberately unset; the console warning is expected.
 
 Key files:
 
 | Path | What |
 |---|---|
-| `src/styles/marketplaceDefaults.css` | The design system. Type scale, field primitives, CTA tokens |
-| `src/config/configListing.js` | Listing types and fields |
-| `src/util/events.js` | Event catalogue queries |
-| `src/util/sellerStats.js` | Reputation and transaction status |
-| `src/hooks/useTicketEvent.js` | Resolves a ticket's event through `eventId` |
-| `.../EditListingWizard/ListingStepChrome.js` | The listing flow's step frame |
-| `.../EditListingWizard/ListingSummary.js` | Step 5's recap |
+| `src/styles/marketplaceDefaults.css` | The design system |
+| `src/config/configListing.js` | Listing types and fields. Read the EVENT comment before changing it |
+| `src/util/events.js` | Event catalogue and ticket queries |
+| `src/ducks/watch.duck.js` | Alerts: watch, unwatch, pending-signup intent |
+| `src/components/WatchButton/` | The alert control, shared by three surfaces |
+| `src/components/EventStats/` | The stats row, shared by three surfaces |
+| `server/api-util/integrationSdk.js` | Integration API client + the REACT_APP_ guard |
+| `server/api-util/listingTypes.js` | Listing type ids, mirrored from `src/` with a drift test |
+| `ext/transaction-processes/default-watch/` | The alert process. README carries the pre-push notes |
+| `ext/transaction-processes/default-purchase-proposed/` | The payments specialist's brief |
 
-Design artifacts (mockups, approved variants, audit reports) live in
-`~/.gstack/projects/sharetribe-web-template/designs/`, **not** in this repo. The approved sell-flow
-and checkout directions and the 2026-08-07 design audit are all there.
+Design artifacts, CEO plan and per-review task lists live in
+`~/.gstack/projects/hector78-star-ticketx-vibe/`, **not** in this repo.

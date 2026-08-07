@@ -1,0 +1,65 @@
+/* The event statistics row. Labels are on the design system's label token - 13px,
+   0.04em tracking, grey600. grey600 rather than grey500 is not a preference: grey500
+   measures 3.97:1 on white and fails WCAG AA for small text. */
+
+.root {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+/* Thin vertical rules divide the stats, per the approved mockup. The rule lives on the
+   left of each entry after the first, so it never trails the last one. */
+.stat {
+  padding-right: 16px;
+  min-width: 0;
+}
+
+.stat + .stat {
+  padding-left: 16px;
+  border-left: 1px solid var(--colorGrey100);
+}
+
+.stat:last-child {
+  padding-right: 0;
+}
+
+.label {
+  font-weight: var(--fontWeightRegular);
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  color: var(--colorGrey600);
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin: 0 0 2px 0;
+}
+
+/* Money is always Inter with tabular figures. Instrument Serif's pound sign collides
+   with the digit after it at every kerning setting tested, so the display face never
+   carries a price. Tabular figures keep the numbers aligned across cards in a grid. */
+.value {
+  font-family: var(--fontFamily);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--colorGrey900);
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* Four stats plus two controls do not fit at 390px without dropping below the readable
+   floor. Sold is the least decision-relevant, so it goes; it still renders on the event
+   page, which passes keepSoldOnMobile. */
+.statMobileHidden {
+  display: none;
+}
+
+@media (--viewportMedium) {
+  .statMobileHidden {
+    display: block;
+  }
+}

@@ -7,11 +7,12 @@ import { useConfiguration } from '../../context/configurationContext';
 import { createSlug } from '../../util/urlHelpers';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { searchEvents } from '../../ducks/events.duck';
-import { eventSummary, formatEventDate, formatPence, hasAdminConfigured } from '../../util/events';
+import { eventSummary, formatEventDate, hasAdminConfigured } from '../../util/events';
 
 import {
   Page,
   LayoutSingleColumn,
+  EventStats,
   H1,
   H3,
   NamedLink,
@@ -34,56 +35,79 @@ import css from './EventsPage.module.css';
  * have, so there is nothing curated to show and usually one ticket behind them - their listings
  * appear directly in the results instead of behind an empty landing page.
  */
+/**
+ * One event in the browse grid.
+ *
+ * The card is deliberately NOT a link. It used to be - the whole thing was wrapped in a
+ * NamedLink - which meant the only thing that looked tappable was nothing at all, and any
+ * control placed inside it had to fight the parent with stopPropagation. Naming the two
+ * actions explicitly fixes both: a buyer can see what the card does, and there are no
+ * nested interactive elements to work around.
+ *
+ * Layout follows the approved mockup at
+ * ~/.gstack/projects/hector78-star-ticketx-vibe/designs/event-card-watch-20260807/variant-B.png
+ */
 const EventCard = props => {
   const { event, listing, currency } = props;
+  const intl = useIntl();
   const date = formatEventDate(event.eventDate);
-  const lastSold = formatPence(event.lastSoldPrice, currency);
-  const faceValue = formatPence(event.faceValue, currency);
   const firstImage = listing.images?.[0];
+  const slug = createSlug(event.title || 'event');
+  const linkParams = { id: event.id, slug };
 
   return (
-    <NamedLink
-      className={css.card}
-      name="EventPage"
-      params={{ id: event.id, slug: createSlug(event.title || 'event') }}
-    >
-      <div className={css.cardImageWrapper}>
-        <ResponsiveImage
-          rootClassName={css.cardImage}
-          alt={event.title}
-          image={firstImage}
-          variants={['listing-card', 'listing-card-2x']}
-        />
-      </div>
+    <article className={css.card}>
+      <NamedLink className={css.cardImageLink} name="EventPage" params={linkParams} tabIndex={-1}>
+        <div className={css.cardImageWrapper}>
+          <ResponsiveImage
+            rootClassName={css.cardImage}
+            alt={event.title}
+            image={firstImage}
+            variants={['listing-card', 'listing-card-2x']}
+          />
+        </div>
+      </NamedLink>
+
       <div className={css.cardBody}>
-        <H3 className={css.cardTitle}>{event.title}</H3>
+        <H3 className={css.cardTitle}>
+          <NamedLink className={css.cardTitleLink} name="EventPage" params={linkParams}>
+            {event.title}
+          </NamedLink>
+        </H3>
         <p className={css.cardMeta}>
           {[date, event.eventTime, event.venue].filter(Boolean).join(' · ')}
         </p>
-        <p className={css.cardPrices}>
-          <span className={css.cardPriceLabel}>
-            <FormattedMessage id="EventPage.faceValue" />
-          </span>{' '}
-          <span className={css.cardPriceValue}>{faceValue || '—'}</span>
-          <span className={css.cardPriceSep}>·</span>
-          <span className={css.cardPriceLabel}>
-            <FormattedMessage id="EventPage.lastSold" />
-          </span>{' '}
-          <span className={css.cardPriceValue}>
-            {lastSold || <FormattedMessage id="EventPage.noSalesYet" />}
-          </span>
-          {typeof event.soldCount === 'number' ? (
-            <>
-              <span className={css.cardPriceSep}>·</span>
-              <span className={css.cardPriceLabel}>
-                <FormattedMessage id="EventPage.soldCount" />
-              </span>{' '}
-              <span className={css.cardPriceValue}>{event.soldCount}</span>
-            </>
-          ) : null}
-        </p>
+
+        <EventStats
+          className={css.cardStats}
+          faceValue={event.faceValue}
+          lastSoldPrice={event.lastSoldPrice}
+          soldCount={event.soldCount}
+          watcherCount={event.watcherCount}
+          currency={currency}
+        />
+
+        <div className={css.cardActions}>
+          {/* Named with the event so a screen reader tabbing a grid of twelve cards hears
+              which one each control belongs to, rather than "view tickets" twelve times. */}
+          {/* The approved design shows a ticket count here ("View 4 tickets"). The count of
+              AVAILABLE tickets is not on this page - events are listed here and tickets are
+              fetched per event on EventPage - and soldCount is a different number. Plumbing
+              it through is a separate data change; the label stays honest until then. */}
+          <NamedLink
+            className={css.cardPrimaryAction}
+            name="EventPage"
+            params={linkParams}
+            aria-label={intl.formatMessage(
+              { id: 'EventsPage.viewTicketsFor' },
+              { title: event.title }
+            )}
+          >
+            <FormattedMessage id="EventsPage.viewTickets" />
+          </NamedLink>
+        </div>
       </div>
-    </NamedLink>
+    </article>
   );
 };
 

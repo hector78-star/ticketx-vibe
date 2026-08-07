@@ -148,11 +148,7 @@ const ListingRow = props => {
             >
               <FormattedMessage id="CurrentListings.confirmYes" />
             </button>{' '}
-            <button
-              type="button"
-              className={css.link}
-              onClick={() => setConfirmingClose(false)}
-            >
+            <button type="button" className={css.link} onClick={() => setConfirmingClose(false)}>
               <FormattedMessage id="CurrentListings.confirmNo" />
             </button>
           </p>

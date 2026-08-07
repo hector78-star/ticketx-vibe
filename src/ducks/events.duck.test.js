@@ -7,7 +7,10 @@ const config = { layout: { listingImage: { aspectWidth: 1, aspectHeight: 1 } } }
 
 const event = (id, title, curated) => ({
   id: { uuid: id },
-  attributes: { title, publicData: { listingType: 'event', ...(curated === false ? { curated: false } : {}) } },
+  attributes: {
+    title,
+    publicData: { listingType: 'event', ...(curated === false ? { curated: false } : {}) },
+  },
 });
 
 const ticket = (id, eventId) => ({

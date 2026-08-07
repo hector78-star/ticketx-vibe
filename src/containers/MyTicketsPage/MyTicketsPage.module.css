@@ -1,17 +1,85 @@
-.main { padding: 24px 24px 64px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
-.title { margin: 24px 0 8px 0; }
-.subtitle { composes: marketplaceBodyFontStyles from global; margin: 0 0 28px 0; color: var(--colorGrey500); }
-.notice { composes: marketplaceBodyFontStyles from global; color: var(--colorGrey500); }
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
-.card { display: flex; gap: 16px; padding: 16px; border: 1px solid var(--colorGrey100); border-radius: var(--borderRadiusMedium, 8px); }
-.thumb { width: 110px; flex-shrink: 0; }
-.image { width: 100%; aspect-ratio: 3/2; object-fit: cover; border-radius: 6px; background-color: var(--colorGrey100); }
-.body { flex: 1; }
-.cardTitle { composes: h4 from global; margin: 0 0 2px 0; }
-.cardMeta { composes: marketplaceTinyFontStyles from global; margin: 0 0 10px 0; color: var(--colorGrey500); }
-.statusRow { display: flex; align-items: baseline; gap: 12px; margin: 0 0 8px 0; }
-.status { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey700); font-weight: var(--fontWeightSemiBold); }
-.statusDisputed { composes: marketplaceTinyFontStyles from global; color: var(--colorFail); font-weight: var(--fontWeightSemiBold); }
-.amount { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey500); }
-.actionNote { composes: marketplaceTinyFontStyles from global; margin: 0 0 8px 0; color: var(--colorGrey700); }
-.cardLink { composes: marketplaceTinyFontStyles from global; color: var(--marketplaceColor); }
+.main {
+  padding: 24px 24px 64px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+.title {
+  margin: 24px 0 8px 0;
+}
+.subtitle {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 28px 0;
+  color: var(--colorGrey500);
+}
+.notice {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey500);
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+}
+.thumb {
+  width: 110px;
+  flex-shrink: 0;
+}
+.image {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+  border-radius: 6px;
+  background-color: var(--colorGrey100);
+}
+.body {
+  flex: 1;
+}
+.cardTitle {
+  composes: h4 from global;
+  margin: 0 0 2px 0;
+}
+.cardMeta {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 10px 0;
+  color: var(--colorGrey500);
+}
+.statusRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px 0;
+}
+.status {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey700);
+  font-weight: var(--fontWeightSemiBold);
+}
+.statusDisputed {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorFail);
+  font-weight: var(--fontWeightSemiBold);
+}
+.amount {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+.actionNote {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0 0 8px 0;
+  color: var(--colorGrey700);
+}
+.cardLink {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--marketplaceColor);
+}

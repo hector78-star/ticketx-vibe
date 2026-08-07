@@ -17,11 +17,8 @@ import {
  * Data behind the seller pages: the seller's own listings, their sales, and their reputation.
  */
 const imageParams = config => {
-  const {
-    aspectWidth = 1,
-    aspectHeight = 1,
-    variantPrefix = 'listing-card',
-  } = config?.layout?.listingImage || {};
+  const { aspectWidth = 1, aspectHeight = 1, variantPrefix = 'listing-card' } =
+    config?.layout?.listingImage || {};
   const aspectRatio = aspectHeight / aspectWidth;
   return {
     'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],
@@ -106,7 +103,10 @@ export const fetchSales = createAsyncThunk(
 /** Price and quantity are the only things editable from Current listings. */
 export const updateListingPriceAndStock = createAsyncThunk(
   'sell/updateListingPriceAndStock',
-  async ({ listingId, price, oldTotal, newTotal, config }, { extra: sdk, dispatch, rejectWithValue }) => {
+  async (
+    { listingId, price, oldTotal, newTotal, config },
+    { extra: sdk, dispatch, rejectWithValue }
+  ) => {
     try {
       if (price) {
         await sdk.ownListings.update({ id: listingId, price });

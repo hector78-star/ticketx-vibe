@@ -27,15 +27,75 @@ import {
 // Import modules from this directory
 import EventPicker from './EventPicker';
 import EditListingTicketFields from './EditListingTicketFields';
+import ListingStepChrome from '../ListingStepChrome';
 import css from './EditListingDetailsForm.module.css';
 
 import {
   AUTOFILLED_TICKET_FIELDS,
   BRANCHED_TICKET_FIELDS,
   TICKET_LISTING_TYPE,
+  TICKET_TYPE_MOBILE,
+  TICKET_TYPE_PDF,
+  TICKET_TYPE_PHYSICAL,
 } from '../../../../config/configListing';
 
 const TITLE_MAX_LENGTH = 60;
+
+/**
+ * The ticket flow's four questions on the Details tab. Price is step 5, over on the Pricing tab.
+ *
+ * Steps 1 and 2 are choices and advance on their own. Steps 3 and 4 keep an explicit Continue,
+ * because there is no moment at which the app can know a seller has finished typing a sentence or
+ * ticked the box they meant to tick - auto-advancing there would either fire too early or trap
+ * them.
+ */
+const TICKET_STEPS = {
+  1: {
+    questionId: 'EditListingDetailsForm.stepEventQuestion',
+    hintId: 'EditListingDetailsForm.stepEventHint',
+  },
+  2: {
+    questionId: 'EditListingDetailsForm.stepTypeQuestion',
+    hintId: 'EditListingDetailsForm.stepTypeHint',
+  },
+  3: {
+    questionId: 'EditListingDetailsForm.stepAttestQuestion',
+    hintId: 'EditListingDetailsForm.stepAttestHint',
+  },
+  4: {
+    questionId: 'EditListingDetailsForm.stepDescriptionQuestion',
+    hintId: 'EditListingDetailsForm.stepDescriptionHint',
+  },
+};
+
+// FieldCheckbox is used both standalone and inside checkbox groups, so a ticked box arrives here as
+// either `true` or a one-element array depending on which. Accept both rather than betting on one.
+const isChecked = value => (Array.isArray(value) ? value.length > 0 : !!value);
+
+// Whether step 3 is satisfied. Each ticket type attests to a different thing, so what counts as
+// "done" branches the same way the fields do.
+const ticketAttestationDone = values => {
+  const type = values.pub_ticketType;
+  if (type === TICKET_TYPE_MOBILE) {
+    return !!values.pub_ticketPlatform && isChecked(values.pub_transferabilityConfirmed);
+  }
+  if (type === TICKET_TYPE_PDF) {
+    return isChecked(values.pub_pdfAttestationConfirmed);
+  }
+  if (type === TICKET_TYPE_PHYSICAL) {
+    return isChecked(values.pub_physicalHandoverAcknowledged);
+  }
+  return false;
+};
+
+// Where to open the flow: the first unanswered question. A seller editing a saved listing lands on
+// the last step rather than being walked through four screens they already filled in.
+const furthestTicketStep = values => {
+  if (!values.pub_eventId) return 1;
+  if (!values.pub_ticketType) return 2;
+  if (!ticketAttestationDone(values)) return 3;
+  return 4;
+};
 
 // Show various error messages
 const ErrorMessage = props => {
@@ -75,12 +135,13 @@ const FieldSelectListingType = props => {
     name,
     listingTypes,
     hasPredefinedListingType,
+    hideSelect,
     onListingTypeChange,
     formApi,
     formId,
     intl,
   } = props;
-  const hasMultipleListingTypes = listingTypes?.length > 1;
+  const hasMultipleListingTypes = listingTypes?.length > 1 && !hideSelect;
 
   const handleOnChange = value => {
     const selectedListingType = listingTypes.find(config => config.listingType === value);
@@ -368,14 +429,16 @@ const EditListingDetailsForm = props => (
       // title is generated from the chosen event, so the two must never both be on screen.
       const isTicketListing = listingType === TICKET_LISTING_TYPE;
 
-      // Flow 5.3 presents one stage at a time. Rather than restructure the wizard, each stage is
-      // revealed once the previous one is answered: pick an event, then say what kind of ticket it
-      // is, then attest, then describe. A seller never faces the whole form at once, and cannot
-      // fill in details for an event they have not chosen.
-      const hasChosenEvent = !!values.pub_eventId;
-      const hasChosenTicketType = !!values.pub_ticketType;
-      const ticketStageReady = !isTicketListing || hasChosenEvent;
-      const descriptionStageReady = !isTicketListing || hasChosenTicketType;
+      // One question per screen, rather than the stack of revealed stages this used to be. Stages
+      // that accumulate still end up as a wall of fields by the last one; the approved flow shows
+      // exactly one and lets the seller step back through them.
+      //
+      // Held in state rather than derived from values, because those diverge the moment a seller
+      // presses Back: their answers are all still there, and deriving the step from them would
+      // bounce them straight forward again. Lazy initial value so it is read once on mount - the
+      // wizard remounts this panel when the tab changes, which is when resuming should re-evaluate.
+      const [ticketStep, setTicketStep] = useState(() => furthestTicketStep(values));
+      const attestationDone = ticketAttestationDone(values);
 
       const titleRequiredMessage = intl.formatMessage({
         id: 'EditListingDetailsForm.titleRequired',
@@ -420,21 +483,33 @@ const EditListingDetailsForm = props => (
       const submitReady = (updated && pristine) || ready;
       const submitInProgress = updateInProgress;
       const hasMandatoryListingTypeData = listingType && transactionProcessAlias && unitType;
+      // Only the step on screen has its fields mounted, so final-form's `invalid` reflects that step
+      // alone - the attestation's validator is not running by the time the seller reaches step 4.
+      // Re-check the earlier answers here so an incomplete ticket cannot be saved.
+      const ticketFlowComplete = !isTicketListing || (attestationDone && !!values.description);
       const submitDisabled =
         invalid ||
         disabled ||
         submitInProgress ||
         !hasMandatoryListingTypeData ||
-        !isCompatibleCurrency;
+        !isCompatibleCurrency ||
+        !ticketFlowComplete;
 
       return (
         <Form className={classes} onSubmit={handleSubmit}>
           <ErrorMessage fetchErrors={fetchErrors} />
 
+          {/* Choosing a type IS step zero of the ticket flow, so once it is chosen the select has
+              done its job. Leaving it on screen put a second control above every question - and a
+              second hairline rule directly above the progress bar - on screens designed to ask one
+              thing. It renders as hidden fields instead, which keeps listingType,
+              transactionProcessAlias and unitType registered and submitted. Step 1's Back clears
+              the type, which brings the select straight back. */}
           <FieldSelectListingType
             name="listingType"
             listingTypes={selectableListingTypes}
             hasPredefinedListingType={hasPredefinedListingType}
+            hideSelect={isTicketListing}
             onListingTypeChange={onListingTypeChange}
             formApi={formApi}
             formId={formId}
@@ -453,10 +528,75 @@ const EditListingDetailsForm = props => (
             />
           )}
 
-          {isTicketListing && isCompatibleCurrency && <EventPicker formId={formId} />}
+          {isTicketListing && isCompatibleCurrency && (
+            <ListingStepChrome
+              step={ticketStep}
+              questionId={TICKET_STEPS[ticketStep].questionId}
+              hintId={TICKET_STEPS[ticketStep].hintId}
+              onBack={
+                ticketStep > 1
+                  ? () => setTicketStep(ticketStep - 1)
+                  : // Step 1 is the first question, but not the first choice: the seller got here by
+                    // picking "Sell a ticket". Back undoes that, which is the only way out now that
+                    // the type select is not permanently on screen.
+                    () => {
+                      formApi.change('listingType', undefined);
+                      formApi.change('transactionProcessAlias', undefined);
+                      formApi.change('unitType', undefined);
+                    }
+              }
+            >
+              {ticketStep === 1 ? (
+                <EventPicker formId={formId} onSelect={() => setTicketStep(2)} />
+              ) : null}
 
-          {isTicketListing && isCompatibleCurrency && ticketStageReady && (
-            <EditListingTicketFields formId={formId} />
+              {ticketStep === 2 ? (
+                <EditListingTicketFields
+                  formId={formId}
+                  stage="type"
+                  onTypeChosen={() => setTicketStep(3)}
+                />
+              ) : null}
+
+              {ticketStep === 3 ? (
+                <>
+                  <EditListingTicketFields formId={formId} stage="attestation" />
+                  <Button
+                    // type="button", not submit: this advances within the Details tab. Submitting
+                    // here would save a half-finished listing and jump to Pricing.
+                    type="button"
+                    className={css.stepButton}
+                    disabled={!attestationDone}
+                    onClick={() => setTicketStep(4)}
+                  >
+                    <FormattedMessage id="EditListingDetailsForm.stepContinue" />
+                  </Button>
+                </>
+              ) : null}
+
+              {ticketStep === 4 ? (
+                <FieldTextInput
+                  id={`${formId}description`}
+                  name="description"
+                  className={css.description}
+                  type="textarea"
+                  // The step's question is the visible label, so the textarea needs its accessible
+                  // name spelled out - a placeholder is not one.
+                  aria-label={intl.formatMessage({
+                    id: 'EditListingDetailsForm.stepDescriptionQuestion',
+                  })}
+                  placeholder={intl.formatMessage({
+                    id: 'EditListingDetailsForm.descriptionPlaceholder',
+                  })}
+                  validate={required(
+                    intl.formatMessage({
+                      id: 'EditListingDetailsForm.descriptionRequired',
+                    })
+                  )}
+                  autoFocus
+                />
+              ) : null}
+            </ListingStepChrome>
           )}
 
           {showTitle && isCompatibleCurrency && !isTicketListing && (
@@ -475,7 +615,7 @@ const EditListingDetailsForm = props => (
             />
           )}
 
-          {showDescription && isCompatibleCurrency && descriptionStageReady && (
+          {showDescription && isCompatibleCurrency && !isTicketListing && (
             <FieldTextInput
               id={`${formId}description`}
               name="description"
@@ -512,15 +652,19 @@ const EditListingDetailsForm = props => (
             </p>
           )}
 
-          <Button
-            className={css.submitButton}
-            type="submit"
-            inProgress={submitInProgress}
-            disabled={submitDisabled}
-            ready={submitReady}
-          >
-            {saveActionMsg}
-          </Button>
+          {/* Steps 1-3 of the ticket flow carry their own advance, so the tab's save button would
+              be a second, contradictory way forward. It belongs on the last step only. */}
+          {!isTicketListing || ticketStep === 4 ? (
+            <Button
+              className={css.submitButton}
+              type="submit"
+              inProgress={submitInProgress}
+              disabled={submitDisabled}
+              ready={submitReady}
+            >
+              {saveActionMsg}
+            </Button>
+          ) : null}
         </Form>
       );
     }}

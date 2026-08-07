@@ -180,9 +180,25 @@ const EditListingWizardTab = props => {
   const isLastTab = tab => tab === marketplaceTabs[marketplaceTabs.length - 1];
   const filesTabParams = { ...params, tab: FILES };
 
+  // Step back one tab. The ticket flow's Back button spans the Details/Pricing boundary - a seller
+  // experiences five questions in a row, not two tabs - so the last panel needs a way to return to
+  // the one before it.
+  const goToPreviousTab = tab => {
+    const index = marketplaceTabs.indexOf(tab);
+    if (index <= 0) {
+      return null;
+    }
+    const previousTabParams = { ...params, tab: marketplaceTabs[index - 1] };
+    return () =>
+      history.push(
+        createResourceLocatorString('EditListingPage', routeConfiguration, previousTabParams, {})
+      );
+  };
+
   const panelProps = tab => {
     return {
       className: css.panel,
+      onGoToPreviousTab: goToPreviousTab(tab),
       errors,
       listing,
       panelUpdated: updatedTab === tab,

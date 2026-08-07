@@ -3,41 +3,64 @@
 }
 
 .field {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
+/* Field labels inside the flow read as the same family of small, tracked, grey labels used on the
+   step chrome and the order receipt - not the template's bold 13px Inter, which competed with the
+   step's own question for emphasis. */
+.fieldLabel {
+  composes: marketplaceTinyFontStyles from global;
+  display: block;
+  margin: 0 0 8px 0;
+  /* grey600, not grey500: the lighter grey measures 3.97:1 on white and fails AA at this size. */
+  color: var(--colorGrey600);
+  letter-spacing: 0.04em;
+  font-weight: var(--fontWeightRegular);
+}
+
+/* Hairline rules, no filled card. A grey rounded box is the one thing the Swiss direction does not
+   do - it turns a sentence the seller has to read into an object they can skim past. The rules give
+   it the same weight as everything else in the flow. */
 .attestation {
-  padding: 16px;
-  margin-bottom: 20px;
-  border: 1px solid var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium, 8px);
-  background-color: var(--colorGrey50);
+  padding: 24px 0;
+  margin-bottom: 24px;
+  border-top: 1px solid var(--colorGrey100);
+  border-bottom: 1px solid var(--colorGrey100);
 }
 
 .attestationHeading {
-  composes: h5 from global;
-  margin: 0 0 8px 0;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0 0 10px 0;
+  padding: 0;
   color: var(--colorGrey900);
 }
 
 .attestationBody {
-  composes: marketplaceTinyFontStyles from global;
-  margin: 0 0 12px 0;
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 18px 0;
   color: var(--colorGrey700);
+  line-height: 1.6;
   white-space: pre-line;
+  max-width: 54ch;
 }
 
 .privacyNote {
   composes: marketplaceTinyFontStyles from global;
-  margin: -12px 0 20px 0;
-  color: var(--colorGrey500);
+  margin: -16px 0 24px 0;
+  color: var(--colorGrey600);
 }
 
+/* The same promise holds for every ticket type, so it is a footnote, not a panel. */
 .handoverNote {
   composes: marketplaceTinyFontStyles from global;
   margin: 0;
-  padding: 12px 16px;
-  border-radius: var(--borderRadiusMedium, 8px);
-  background-color: var(--colorGrey50);
-  color: var(--colorGrey700);
+  padding: 0;
+  color: var(--colorGrey600);
+  line-height: 1.6;
+  max-width: 60ch;
 }

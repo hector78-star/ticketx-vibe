@@ -1,0 +1,78 @@
+/* One step of the listing flow. Mobile-first: this is a phone-shaped layout that gets more air on
+   a desktop, not a desktop layout squeezed down. */
+
+.root {
+  width: 100%;
+  max-width: 640px;
+}
+
+.track {
+  height: 2px;
+  width: 100%;
+  background-color: var(--colorGrey100);
+  margin-bottom: 20px;
+}
+
+.fill {
+  height: 100%;
+  background-color: var(--marketplaceColor);
+  transition: width 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}
+
+.chrome {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stepLabel {
+  composes: marketplaceTinyFontStyles from global;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  /* grey600, not grey500: at 13px the lighter grey measures 3.97:1 on white and fails AA. */
+  color: var(--colorGrey600);
+}
+
+/* Back is always present. Choice steps advance on tap, so without it a mistap would be
+   unrecoverable except through the browser's own back button. Shares the homepage's CTA shape. */
+.back {
+  composes: ctaLinkQuiet from global;
+}
+
+.question {
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  margin: 0 0 12px 0;
+  max-width: 16ch;
+}
+
+@media (min-width: 768px) {
+  .question {
+    font-size: 52px;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+}
+
+.hint {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 32px 0;
+  color: var(--colorGrey700);
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+.body {
+  margin-top: 8px;
+}

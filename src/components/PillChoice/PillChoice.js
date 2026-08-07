@@ -68,7 +68,11 @@ const PillChoice = props => {
   };
 
   return (
-    <Field name={name} validate={validate} subscription={{ value: true, error: true, touched: true }}>
+    <Field
+      name={name}
+      validate={validate}
+      subscription={{ value: true, error: true, touched: true }}
+    >
       {({ input, meta }) => {
         const showError = meta.touched && meta.error;
         return (

@@ -30,11 +30,8 @@ export const fetchMyTickets = createAsyncThunk(
   'myTickets/fetch',
   async ({ config }, { extra: sdk, dispatch, rejectWithValue }) => {
     try {
-      const {
-        aspectWidth = 1,
-        aspectHeight = 1,
-        variantPrefix = 'listing-card',
-      } = config?.layout?.listingImage || {};
+      const { aspectWidth = 1, aspectHeight = 1, variantPrefix = 'listing-card' } =
+        config?.layout?.listingImage || {};
       const aspectRatio = aspectHeight / aspectWidth;
 
       const response = await sdk.transactions.query({

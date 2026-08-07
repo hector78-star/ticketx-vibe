@@ -292,9 +292,7 @@ export class TransactionPanelComponent extends Component {
                 />
               </div>
             ) : null}
-            {showHandoverPanel ? (
-              <HandoverPanel isProvider={isProvider} listing={listing} />
-            ) : null}
+            {showHandoverPanel ? <HandoverPanel isProvider={isProvider} listing={listing} /> : null}
 
             <FeedSection
               rootClassName={css.feedContainer}

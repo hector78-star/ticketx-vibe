@@ -26,11 +26,8 @@ const EVENT_FIELDS = [
 ];
 
 const imageQueryParams = config => {
-  const {
-    aspectWidth = 1,
-    aspectHeight = 1,
-    variantPrefix = 'listing-card',
-  } = config?.layout?.listingImage || {};
+  const { aspectWidth = 1, aspectHeight = 1, variantPrefix = 'listing-card' } =
+    config?.layout?.listingImage || {};
   const aspectRatio = aspectHeight / aspectWidth;
   return {
     'fields.image': [`variants.${variantPrefix}`, `variants.${variantPrefix}-2x`],

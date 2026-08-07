@@ -47,9 +47,14 @@
   }
 
   @media (--viewportLarge) {
-    font-weight: var(--fontWeightSemiBold);
-    font-size: 20px;
-    line-height: 24px;
+    /* The display serif, at its only weight. Bold Inter at 20px was the loudest type on the listing
+       wizard, competing with the step question it sits beside. Note Instrument Serif ships weight
+       400 only - asking for semibold here gets a synthesised fake bold. */
+    font-family: var(--fontFamilyHeading);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 28px;
+    letter-spacing: -0.015em;
 
     height: unset;
     width: var(--TabNav_linkWidth);

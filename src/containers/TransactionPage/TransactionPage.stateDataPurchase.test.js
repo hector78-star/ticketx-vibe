@@ -75,11 +75,7 @@ describe('purchase process: buyer dispute in the purchased state', () => {
   });
 
   it('hides dispute when next transitions have not loaded', () => {
-    const stateData = stateDataFor(
-      transitions.CONFIRM_PAYMENT,
-      TX_TRANSITION_ACTOR_CUSTOMER,
-      null
-    );
+    const stateData = stateDataFor(transitions.CONFIRM_PAYMENT, TX_TRANSITION_ACTOR_CUSTOMER, null);
     expect(stateData.showDispute).toBe(false);
   });
 

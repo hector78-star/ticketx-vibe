@@ -85,8 +85,7 @@ export const queryEvents = (sdk, config, params = {}) => {
   // Fetching explicit ids is a lookup, not a browse: EventPage resolves one event this way, and
   // applying the date filter there would 404 the page for any event that has already happened.
   const isLookup = !!rest.ids;
-  const fromToday =
-    includePast || isLookup ? {} : { pub_eventDate: `${todayAsEventDate()},` };
+  const fromToday = includePast || isLookup ? {} : { pub_eventDate: `${todayAsEventDate()},` };
   return sdk.listings.query({
     pub_listingType: EVENT_LISTING_TYPE,
     sort: '-pub_eventDate',

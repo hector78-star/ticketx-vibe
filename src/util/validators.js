@@ -152,7 +152,9 @@ export const emailDomainValid = (message, domain = SIGNUP_EMAIL_DOMAIN) => value
   if (!value) {
     return message;
   }
-  const lower = String(value).toLowerCase().trim();
+  const lower = String(value)
+    .toLowerCase()
+    .trim();
   const suffix = `@${domain.toLowerCase()}`;
   const subdomainSuffix = `.${domain.toLowerCase()}`;
   const atIndex = lower.lastIndexOf('@');

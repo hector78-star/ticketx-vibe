@@ -58,21 +58,31 @@
 }
 
 .price {
-  composes: h4 from global;
-  font-weight: var(--fontWeightBold);
-  margin: 0 0 0 24px;
+  margin: 12px 0 0 24px;
 
   @media (--viewportMedium) {
-    margin: 0;
+    margin: 16px 0 0 0;
     padding: 0;
   }
 }
+
+/* Near-black, not the marketplace purple. Purple is the accent that means "this is the action" -
+   spending it on the price as well leaves the Buy button with nothing to be louder than. Inter with
+   tabular figures, because Instrument Serif's pound sign overlaps the digit after it (see the note
+   in OrderReceipt.module.css) and every price here is in sterling. */
 .priceValue {
-  color: var(--marketplaceColor);
+  font-family: var(--fontFamily);
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--colorGrey900);
 }
 
 .perUnit {
-  color: var(--marketplaceColor);
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey600);
 }
 
 .author {
@@ -124,15 +134,23 @@
   }
 }
 
+/* The listing title is the page's one display-type moment. Grey-700 body weight made it read as a
+   caption on a stock template rather than the name of the thing being sold. */
 .orderTitle {
-  /* Font */
-  color: var(--colorGrey700);
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--colorGrey900);
 
   margin-top: 0;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 
   @media (--viewportLarge) {
-    margin-bottom: 0;
+    font-size: 40px;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
   }
 }
 

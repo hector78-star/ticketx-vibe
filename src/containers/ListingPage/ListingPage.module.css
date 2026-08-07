@@ -51,13 +51,16 @@
   padding: 0 8px;
 }
 
+/* A hairline notice, not a dark slab. This bar says "this is your own listing" - useful, but it was
+   the heaviest element on the page and the first thing the eye landed on, above the listing itself. */
 .actionBar {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   width: 100%;
-  color: var(--colorGrey100);
-  background-color: var(--colorGrey700);
+  color: var(--colorGrey700);
+  background-color: var(--colorWhite);
+  border-bottom: 1px solid var(--colorGrey200);
   z-index: 1; /* bring on top of mobile image */
   padding: 0 24px;
 
@@ -196,16 +199,17 @@
   }
 }
 
+/* Was light-on-dark; the bar is now white, so these have to flip or they vanish into it. */
 .addPayoutDetails,
 .editListingLink {
   composes: h5 from global;
   margin: 23px 24px 11px 0px;
-  color: var(--colorGrey100);
+  color: var(--colorGrey700);
 
   transition: var(--transitionStyleButton);
 
   &:hover {
-    color: var(--colorWhite);
+    color: var(--colorGrey900);
     text-decoration: none;
   }
 
@@ -392,14 +396,26 @@
   }
 }
 
+/* Instrument Serif at its only weight. This is the H4/H2 the listing page hands to OrderPanel as
+   `titleDesktop`, so it overrides OrderPanel's own .orderTitle - both need the display face or the
+   title changes typeface between the mobile and desktop layouts. */
 .orderPanelTitle {
-  /* Font */
-  font-weight: var(--fontWeightBold);
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--colorGrey900);
 
   /* Layout */
   width: 100%;
   margin-top: 0;
   margin-bottom: 0;
+
+  @media (--viewportLarge) {
+    font-size: 40px;
+    letter-spacing: -0.03em;
+  }
   &.titleMarginForOwnListingNoImage {
     margin-top: 100px;
     @media (--viewportMedium) {
@@ -575,19 +591,27 @@
   }
 }
 
+/* Section titles in the display serif, like every other heading on the marketplace. Bold Inter at
+   body size made "Details" and "About the listing author" read as bolded paragraphs rather than
+   as structure. */
 .sectionHeading,
 .sectionHeadingWithExtraMargin {
-  /* Font for sections titles */
-  composes: p from global;
+  font-family: var(--fontFamilyHeading);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--colorGrey900);
   padding: 0;
-  font-weight: var(--fontWeightBold);
 
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 
   @media (--viewportMedium) {
+    font-size: 28px;
+    letter-spacing: -0.02em;
     margin-top: 0;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
   }
 }
 
@@ -686,9 +710,15 @@
   }
 }
 
+/* Label/value rows read the same here as on the order receipt and the listing-flow summary: a quiet
+   grey label on the left, the value on the right. They were bold-label-plus-body before, which is a
+   third pattern for the same idea. */
 .detailLabel {
-  font-weight: var(--fontWeightSemiBold);
-  letter-spacing: -0.09px;
+  composes: marketplaceTinyFontStyles from global;
+  font-weight: var(--fontWeightRegular);
+  letter-spacing: 0.04em;
+  color: var(--colorGrey600);
+  margin: 0;
 }
 
 .inquiryModalContent {

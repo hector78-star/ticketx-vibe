@@ -1,0 +1,66 @@
+/* Hairline rules, no card. The summary is a recap the seller reads once, not an object on the page
+   competing with the price field below it. */
+
+.root {
+  margin-bottom: 36px;
+}
+
+.heading {
+  composes: marketplaceTinyFontStyles from global;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--colorGrey600);
+  margin: 0 0 4px 0;
+  padding: 0;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--colorGrey100);
+}
+
+/* Stacked at phone width. A label/value pair forced side by side at 390px squeezes a venue like
+   "Lower College Lawn" into a two-word-per-line column. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--colorGrey100);
+}
+
+@media (min-width: 600px) {
+  .row {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+.label {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey600);
+  letter-spacing: 0.04em;
+  flex: none;
+}
+
+.value {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey900);
+}
+
+@media (min-width: 600px) {
+  .value {
+    text-align: right;
+    /* Long descriptions wrap rather than pushing the label off the row. */
+    max-width: 60%;
+  }
+}
+
+.muted {
+  color: var(--colorGrey600);
+}

@@ -3,7 +3,11 @@ import React from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
 import { formatEventDate } from '../../util/events';
 import { readSellerStats } from '../../util/sellerStats';
-import { TICKET_TYPE_MOBILE, TICKET_TYPE_PDF, TICKET_TYPE_PHYSICAL } from '../../config/configListing';
+import {
+  TICKET_TYPE_MOBILE,
+  TICKET_TYPE_PDF,
+  TICKET_TYPE_PHYSICAL,
+} from '../../config/configListing';
 
 import css from './OrderReceipt.module.css';
 
@@ -61,7 +65,10 @@ const Journey = props => {
           </span>
           <span className={css.stepBody}>
             <span className={css.stepTitle}>
-              <FormattedMessage id={`OrderReceipt.step${n}.title`} values={{ name: providerName }} />
+              <FormattedMessage
+                id={`OrderReceipt.step${n}.title`}
+                values={{ name: providerName }}
+              />
             </span>
             <span className={css.stepDetail}>
               <FormattedMessage

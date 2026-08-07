@@ -15,3 +15,10 @@
 .priceCurrencyInvalid {
   color: var(--colorFail);
 }
+
+/* On the ticket flow this form is step 5, so it has to share the step column's measure. Left at the
+   panel's full width the price field ran wider than the question and the summary above it, and the
+   three left edges lined up while the right edges did not. */
+.stepForm {
+  max-width: 640px;
+}

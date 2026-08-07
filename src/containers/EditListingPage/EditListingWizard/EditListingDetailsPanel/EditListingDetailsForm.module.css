@@ -64,6 +64,19 @@
   display: none;
 }
 
+/* Advances within the ticket flow. Sits directly under the step's fields rather than being pushed
+   to the bottom of the panel like .submitButton - it answers the question on screen, it does not
+   close the tab. */
+.stepButton {
+  margin-top: 32px;
+  flex-shrink: 0;
+
+  @media (--viewportLarge) {
+    display: inline-block;
+    width: 241px;
+  }
+}
+
 .submitButton {
   margin-top: auto;
   margin-bottom: 24px;

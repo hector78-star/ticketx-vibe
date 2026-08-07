@@ -5,12 +5,7 @@ import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { eventSummary, formatEventDate, formatPence, ADMIN_USER_ID } from '../../util/events';
-import {
-  fetchAdminEvents,
-  updateEvent,
-  createEvent,
-  setEventImage,
-} from './AdminEventsPage.duck';
+import { fetchAdminEvents, updateEvent, createEvent, setEventImage } from './AdminEventsPage.duck';
 
 import { Page, LayoutSingleColumn, H1, H2, Button, ResponsiveImage } from '../../components';
 import TopbarContainer from '../TopbarContainer/TopbarContainer';

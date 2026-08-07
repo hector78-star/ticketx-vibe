@@ -17,10 +17,7 @@ import { loadData as PrivacyPolicyPageLoader } from './PrivacyPolicyPage/Privacy
 import { loadData as ProfilePageLoader } from './ProfilePage/ProfilePage.duck';
 import { loadData as RequestQuotePageLoader } from './RequestQuotePage/RequestQuotePage.duck';
 import { loadData as AdminEventsPageLoader } from './AdminEventsPage/AdminEventsPage.duck';
-import {
-  loadDataCurrentListings,
-  loadDataSales,
-} from './SellPage/SellPage.duck';
+import { loadDataCurrentListings, loadDataSales } from './SellPage/SellPage.duck';
 import { loadData as EventPageLoader } from './EventPage/EventPage.duck';
 import { loadData as SearchPageLoader } from './SearchPage/SearchPage.duck';
 import { loadData as StripePayoutPageLoader } from './StripePayoutPage/StripePayoutPage.duck';

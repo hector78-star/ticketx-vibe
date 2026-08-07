@@ -116,8 +116,8 @@
    */
   --fontFamily: 'Inter', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-  --fontFamilyHeading: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino,
-    Georgia, 'Times New Roman', serif;
+  --fontFamilyHeading: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Times New Roman', serif;
 
   --fontWeightRegular: 400;
   --fontWeightMedium: 500;
@@ -478,16 +478,19 @@ legend {
   }
 }
 
+/* Matches the .label class below - most fields label themselves through this element selector, so
+   restyling only the class left the actual forms untouched. Quiet, lightly tracked, grey600. */
 label {
-  font-weight: var(--fontWeightSemiBold);
+  font-weight: var(--fontWeightRegular);
   font-size: 13px;
   line-height: 18px;
+  letter-spacing: 0.04em;
+  color: var(--colorGrey600);
   display: block;
   margin-top: 0;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 
   @media (--viewportMedium) {
-    font-weight: var(--fontWeightSemiBold);
     line-height: 16px;
     margin-top: 0;
     margin-bottom: 0;
@@ -509,55 +512,61 @@ textarea {
   font-size: 16px;
 }
 
+/* Form fields are a single hairline rule, not a rounded bordered box.
+ *
+ * The bordered box is the template's default and it is what made every form on this marketplace
+ * look like a stock admin panel next to the homepage: each field drew its own frame inside the
+ * frame the page already had. A rule under the text says "type here" with one line instead of four,
+ * which is the same restraint the rest of the type system runs on.
+ *
+ * Applied to the element selectors so it holds everywhere at once - any component that styles its
+ * own field still overrides this, as it did before. */
 select {
   /* Dimensions */
   display: block;
   width: 100%;
   margin: 0;
 
-  /* 6 + 24 + 4 + borders are divisible by 6 */
-  padding: 6px 12px 4px 12px;
-  background-color: #fff;
+  padding: 8px 24px 8px 0;
+  background-color: transparent;
 
   /* Borders */
-  border-radius: 6px;
-  border: 1px solid #d8dce6;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--colorGrey300);
   outline: none;
 
   /* Transition */
-  transition: all ease-in-out 100ms;
-
-  padding: 6px 24px 4px 12px;
+  transition: border-color ease-in-out 120ms;
 
   /* Unset user agent styles */
   appearance: none;
 
   /* Background */
   background-image: url("data:image/svg+xml,%3Csvg width='10' height='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232D4053' stroke='%232D4053' stroke-width='.5' fill-rule='evenodd'%3E%3Cpath d='M4.687 15.315a.443.443 0 0 0 .626 0l3.557-3.556a.446.446 0 0 0-.629-.629L5 14.37l-3.241-3.24a.445.445 0 0 0-.629.63l3.557 3.553v.002ZM5.313 1.13a.443.443 0 0 0-.626 0L1.13 4.685a.446.446 0 0 0 .629.63L5 2.074l3.241 3.24a.445.445 0 0 0 .629-.629L5.313 1.131V1.13Z'/%3E%3C/g%3E%3C/svg%3E");
-  background-position: center right 12px;
+  background-position: center right 4px;
   background-size: 8px 14px;
 
   &::placeholder {
-    color: var(--colorGrey300);
+    color: var(--colorGrey400);
   }
 
   @media (--viewportMedium) {
-    padding: 7px 32px 7px 16px;
+    padding: 9px 32px 9px 0;
     line-height: 32px;
-    background-position: center right 16px;
+    background-position: center right 6px;
     background-size: 10px 16px;
   }
 }
 /* Effects */
 select:hover {
-  border: 1px solid #b8bfd1;
-  transition: all ease-in-out 100ms;
+  border-bottom-color: var(--colorGrey700);
 }
+/* Focus is the marketplace purple, not the browser-default blue glow this shipped with. A bootstrap
+   blue halo on every field is an accent colour the brand never chose. */
 select:focus {
-  background-color: #fff;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
-  transition: all ease-in-out 100ms;
+  border-bottom-color: var(--marketplaceColor);
+  box-shadow: none;
 }
 select:disabled {
   opacity: 0.5;
@@ -576,40 +585,48 @@ textarea {
   width: 100%;
   margin: 0;
 
-  /* 6 + 24 + 4 + borders are divisible by 6 */
-  padding: 6px 12px 4px 12px;
-  background-color: #fff;
+  padding: 8px 0;
+  background-color: transparent;
 
   /* Borders */
-  border-radius: 6px;
-  border: 1px solid #d8dce6;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--colorGrey300);
   outline: none;
 
   /* Transition */
-  transition: all ease-in-out 100ms;
+  transition: border-color ease-in-out 120ms;
 
+  /* grey400, not grey300: placeholder text at grey300 is under 3:1 on white and unreadable in
+     daylight on a phone, which is where this marketplace is used. */
   &::placeholder {
-    color: var(--colorGrey300);
+    color: var(--colorGrey400);
   }
 
   @media (--viewportMedium) {
-    /* 7 + 32 + 7 + borders = 48, which is divisible by 8. */
-    padding: 7px 16px 7px 16px;
+    padding: 9px 0;
     line-height: 32px;
   }
 }
 /* Effects */
 input:hover,
 textarea:hover {
-  border: 1px solid #b8bfd1;
-  transition: all ease-in-out 100ms;
+  border-bottom-color: var(--colorGrey700);
 }
 input:focus,
 textarea:focus {
-  background-color: #fff;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
-  transition: all ease-in-out 100ms;
+  border-bottom-color: var(--marketplaceColor);
+  box-shadow: none;
+}
+/* Checkboxes and radios are drawn by their own components and must not inherit the text-field rule,
+   which would paint a line under every tick box. Width is deliberately left alone: an attribute
+   selector outranks a class, so setting it here overrode the 1px width that visually-hidden radios
+   (PillChoice) rely on. */
+input[type='checkbox'],
+input[type='radio'] {
+  display: inline-block;
+  padding: 0;
+  border-bottom: 0;
 }
 input:disabled,
 textarea:disabled {
@@ -782,16 +799,21 @@ textarea {
   }
 }
 
+/* Field labels are quiet: small, lightly tracked, grey. Bold 13px Inter made every label shout as
+   loudly as the heading above it, which is what turned a form into a wall. Same family as the
+   "STEP 1 OF 5" chrome and the order receipt's row labels, so a label reads the same wherever it
+   appears. grey600 rather than grey500 - the lighter grey measures 3.97:1 on white and fails AA. */
 .label {
-  font-weight: var(--fontWeightSemiBold);
+  font-weight: var(--fontWeightRegular);
   font-size: 13px;
   line-height: 18px;
+  letter-spacing: 0.04em;
+  color: var(--colorGrey600);
   display: block;
   margin-top: 0;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 
   @media (--viewportMedium) {
-    font-weight: var(--fontWeightSemiBold);
     line-height: 16px;
     margin-top: 0;
     margin-bottom: 0;
@@ -1608,4 +1630,64 @@ textarea {
   @media (--viewportMedium) {
     margin-top: 32px;
   }
+}
+
+/* ================ TicketX: shared design tokens ================ */
+
+/**
+ * The inline call to action.
+ *
+ * The homepage's "FIND A TICKET" is the marketplace's voice for "go on then": small, uppercase,
+ * tracked, underlined by a single hairline, no fill. Every secondary action in the app should sound
+ * the same, so it lives here rather than being retyped per component. Filled buttons are reserved
+ * for the one primary action on a screen.
+ *
+ * Properties are written out literally. This file is a plain global stylesheet, not a CSS module -
+ * `composes:` is silently dropped here, which is how the first version of this token ended up
+ * rendering as a bare browser-default button.
+ */
+.ctaLink,
+.ctaLinkQuiet {
+  font-family: var(--fontFamily);
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--colorGrey900);
+  padding: 0 0 6px 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ctaLink {
+  color: var(--colorGrey900);
+}
+
+.ctaLink:hover {
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+/* The quieter sibling: same shape, grey, for "cancel" and "change" rather than "continue". */
+.ctaLinkQuiet {
+  color: var(--colorGrey700);
+  border-bottom-color: var(--colorGrey300);
+}
+
+.ctaLinkQuiet:hover {
+  text-decoration: none;
+  color: var(--colorGrey900);
+  border-bottom-color: var(--colorGrey900);
 }

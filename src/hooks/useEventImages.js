@@ -28,10 +28,9 @@ export const useEventImages = (listings = []) => {
   // Only fetch the catalog when something on screen actually needs it. Fetching on every listing
   // render would pull the whole catalog for pages showing no tickets at all - and would make test
   // suites issue live queries, since REACT_APP_ADMIN_USER_ID is read under test too.
-  const needsEvents = useMemo(
-    () => listings.some(l => !!l?.attributes?.publicData?.eventId),
-    [listings]
-  );
+  const needsEvents = useMemo(() => listings.some(l => !!l?.attributes?.publicData?.eventId), [
+    listings,
+  ]);
 
   useEffect(() => {
     if (needsEvents && !fetched && !inProgress && hasAdminConfigured()) {

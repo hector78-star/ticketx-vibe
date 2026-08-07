@@ -56,43 +56,55 @@ const Attestation = props => {
         name={name}
         label={intl.formatMessage({ id: labelId })}
         value={true}
-        validate={required(intl.formatMessage({ id: 'EditListingTicketFields.attestationRequired' }))}
+        validate={required(
+          intl.formatMessage({ id: 'EditListingTicketFields.attestationRequired' })
+        )}
       />
     </div>
   );
 };
 
+/**
+ * @param {Object} props
+ * @param {'type'|'attestation'} props.stage which step of the flow is on screen. Type and
+ *   attestation used to render together; the approved flow gives each its own screen, so this
+ *   renders one or the other rather than both.
+ * @param {Function} [props.onTypeChosen] called after a type is picked, to advance the flow
+ */
 const EditListingTicketFields = props => {
-  const { formId } = props;
+  const { formId, stage = 'type', onTypeChosen } = props;
   const intl = useIntl();
   const { values } = useFormState({ subscription: { values: true } });
   const ticketType = values.pub_ticketType;
 
+  if (stage === 'type') {
+    return (
+      <div className={css.root}>
+        <PillChoice
+          id={`${formId}pub_ticketType`}
+          name="pub_ticketType"
+          className={css.field}
+          options={TICKET_TYPE_OPTIONS.map(opt => ({
+            value: opt.value,
+            label: intl.formatMessage({ id: opt.labelId }),
+            hint: intl.formatMessage({ id: opt.hintId }),
+          }))}
+          onSelect={onTypeChosen}
+          validate={required(intl.formatMessage({ id: 'EditListingTicketFields.typeRequired' }))}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={css.root}>
-      {/* Pills rather than a dropdown, per the approved sell-flow direction. A native select hides
-          three short options behind a tap and a scroll; the pills show all of them at once, which
-          is the whole point of asking one question at a time. */}
-      <PillChoice
-        id={`${formId}pub_ticketType`}
-        name="pub_ticketType"
-        className={css.field}
-        legend={intl.formatMessage({ id: 'EditListingTicketFields.typeLabel' })}
-        hint={intl.formatMessage({ id: 'EditListingTicketFields.typeHint' })}
-        options={TICKET_TYPE_OPTIONS.map(opt => ({
-          value: opt.value,
-          label: intl.formatMessage({ id: opt.labelId }),
-          hint: intl.formatMessage({ id: opt.hintId }),
-        }))}
-        validate={required(intl.formatMessage({ id: 'EditListingTicketFields.typeRequired' }))}
-      />
-
       {ticketType === TICKET_TYPE_MOBILE ? (
         <>
           <FieldTextInput
             id={`${formId}pub_ticketPlatform`}
             name="pub_ticketPlatform"
             className={css.field}
+            labelClassName={css.fieldLabel}
             type="text"
             label={intl.formatMessage({ id: 'EditListingTicketFields.platformLabel' })}
             placeholder={intl.formatMessage({

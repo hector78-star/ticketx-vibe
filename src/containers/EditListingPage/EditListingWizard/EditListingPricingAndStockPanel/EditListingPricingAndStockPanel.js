@@ -9,6 +9,11 @@ import { isValidCurrencyForTransactionProcess } from '../../../../util/fieldHelp
 
 // Import shared components
 import { H3, ListingLink } from '../../../../components';
+import { TICKET_LISTING_TYPE } from '../../../../config/configListing';
+
+// Import modules from this directory
+import ListingStepChrome from '../ListingStepChrome';
+import ListingSummary from '../ListingSummary';
 
 // Import modules from this directory
 import EditListingPricingAndStockForm from './EditListingPricingAndStockForm';
@@ -25,6 +30,7 @@ const getListingTypeConfig = (publicData, listingTypes) => {
 const getInitialValues = props => {
   const { listing, listingTypes } = props;
   const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
+
   const price = listing?.attributes?.price;
   const currentStock = listing?.currentStock;
 
@@ -88,6 +94,7 @@ const EditListingPricingAndStockPanel = props => {
     updateInProgress,
     errors,
     updatePageTitle: UpdatePageTitle,
+    onGoToPreviousTab,
     intl,
   } = props;
 
@@ -101,6 +108,11 @@ const EditListingPricingAndStockPanel = props => {
   const transactionProcessAlias = listingTypeConfig.transactionType.alias;
 
   const hasInfiniteStock = STOCK_INFINITE_ITEMS.includes(listingTypeConfig?.stockType);
+
+  // Tickets run on default-purchase, which routes to THIS tab, not the plain pricing one. Price is
+  // the fifth and last question of their flow, so it wears the same chrome as the four on the
+  // Details tab, with the summary of everything said so far above the field.
+  const isTicketListing = publicData?.listingType === TICKET_LISTING_TYPE;
 
   const isPublished = listing?.id && listing?.attributes?.state !== LISTING_STATE_DRAFT;
 
@@ -137,12 +149,24 @@ const EditListingPricingAndStockPanel = props => {
           { ...panelHeadingProps.messageProps }
         )}
       />
-      <H3 as="h1">
-        <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
-      </H3>
+      {isTicketListing ? (
+        <ListingStepChrome
+          step={5}
+          questionId="EditListingPricingAndStockPanel.stepPriceQuestion"
+          hintId="EditListingPricingAndStockPanel.stepPriceHint"
+          as="h1"
+          onBack={onGoToPreviousTab}
+        >
+          <ListingSummary listing={listing} />
+        </ListingStepChrome>
+      ) : (
+        <H3 as="h1">
+          <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
+        </H3>
+      )}
       {priceCurrencyValid ? (
         <EditListingPricingAndStockForm
-          className={css.form}
+          className={classNames(css.form, { [css.stepForm]: isTicketListing })}
           initialValues={initialValues}
           onSubmit={values => {
             const { price, stock, stockTypeInfinity } = values;

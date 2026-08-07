@@ -7,12 +7,7 @@ import { useConfiguration } from '../../context/configurationContext';
 import { createSlug } from '../../util/urlHelpers';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
 import { searchEvents } from '../../ducks/events.duck';
-import {
-  eventSummary,
-  formatEventDate,
-  formatPence,
-  hasAdminConfigured,
-} from '../../util/events';
+import { eventSummary, formatEventDate, formatPence, hasAdminConfigured } from '../../util/events';
 
 import {
   Page,

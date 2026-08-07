@@ -61,10 +61,13 @@ const PriceLine = props => {
   const hasComparison = price && typeof faceValue === 'number' && faceValue > 0;
   const diff = hasComparison ? price.amount - faceValue : 0;
 
-  const noteClass =
-    diff > 0 ? css.priceOver : diff < 0 ? css.priceUnder : css.priceAt;
+  const noteClass = diff > 0 ? css.priceOver : diff < 0 ? css.priceUnder : css.priceAt;
   const noteId =
-    diff > 0 ? 'TicketCard.overFaceValue' : diff < 0 ? 'TicketCard.underFaceValue' : 'TicketCard.atFaceValue';
+    diff > 0
+      ? 'TicketCard.overFaceValue'
+      : diff < 0
+      ? 'TicketCard.underFaceValue'
+      : 'TicketCard.atFaceValue';
 
   return (
     <div className={css.priceBlock}>

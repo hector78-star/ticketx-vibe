@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 
@@ -26,7 +26,11 @@ import ErrorMessage from './ErrorMessage';
 import EditListingDetailsForm from './EditListingDetailsForm';
 import css from './EditListingDetailsPanel.module.css';
 
-import { EVENT_LISTING_TYPE, SELLER_LISTING_TYPES } from '../../../../config/configListing';
+import {
+  EVENT_LISTING_TYPE,
+  SELLER_LISTING_TYPES,
+  TICKET_LISTING_TYPE,
+} from '../../../../config/configListing';
 import { ADMIN_USER_ID } from '../../../../util/events';
 
 /**
@@ -393,6 +397,19 @@ const EditListingDetailsPanel = props => {
     hasListingTypesSet && (!hasExistingListingType || hasValidExistingListingType);
   const isPublished = listing?.id && state !== LISTING_STATE_DRAFT;
 
+  // Tracked in state, not read off initialValues: a brand-new draft has no saved listingType, so
+  // deriving it from the initial values left the generic "Listing details" heading sitting above
+  // the ticket flow's own question until the first save. onListingTypeChange fires the moment the
+  // seller picks a type, which is when the flow actually takes over the screen.
+  const [selectedListingType, setSelectedListingType] = useState(initialValues?.listingType);
+  const handleListingTypeChange = listingTypeConfig => {
+    setSelectedListingType(listingTypeConfig?.listingType);
+    if (onListingTypeChange) {
+      onListingTypeChange(listingTypeConfig);
+    }
+  };
+  const isTicketListing = selectedListingType === TICKET_LISTING_TYPE;
+
   const panelHeadingProps = isPublished
     ? {
         id: 'EditListingDetailsPanel.title',
@@ -413,9 +430,16 @@ const EditListingDetailsPanel = props => {
           { ...panelHeadingProps.messageProps }
         )}
       />
-      <H3 as="h1">
-        <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
-      </H3>
+      {/* The ticket flow puts its own question at the top of every step, and a generic "Listing
+          details" above it is the clutter the flow exists to remove. Derived from initialValues
+          rather than live form state, which is what the form itself initialises from: before a
+          type is chosen there is no ticket flow on screen either, so the heading correctly shows.
+          */}
+      {isTicketListing ? null : (
+        <H3 as="h1">
+          <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
+        </H3>
+      )}
 
       {canShowEditListingDetailsForm ? (
         <EditListingDetailsForm
@@ -482,7 +506,7 @@ const EditListingDetailsPanel = props => {
             pickCategoryFields(values, categoryKey, 1, listingCategories)
           }
           categoryPrefix={categoryKey}
-          onListingTypeChange={onListingTypeChange}
+          onListingTypeChange={handleListingTypeChange}
           listingFieldsConfig={listingFields}
           listingCurrency={listing?.attributes?.price?.currency}
           marketplaceCurrency={config.currency}

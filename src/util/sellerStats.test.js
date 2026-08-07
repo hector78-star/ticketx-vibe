@@ -17,7 +17,9 @@ describe('saleProgress', () => {
     const progress = saleProgress(tx('transition/mark-delivered'));
     expect(progress.key).toEqual('delivered');
     expect(progress.tone).toEqual('delivered');
-    expect(progress.percent).toBeGreaterThan(saleProgress(tx('transition/confirm-payment')).percent);
+    expect(progress.percent).toBeGreaterThan(
+      saleProgress(tx('transition/confirm-payment')).percent
+    );
   });
 
   it('maps a dispute to disputed/red from either state it can be raised in', () => {

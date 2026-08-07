@@ -128,7 +128,9 @@ const CreateEventForm = props => {
 };
 
 const EventPicker = props => {
-  const { formId } = props;
+  // onSelect: fired once an event has been chosen, so the listing flow can advance to the next
+  // question without the seller having to confirm a choice they just made.
+  const { formId, onSelect } = props;
   const intl = useIntl();
   const config = useConfiguration();
   const dispatch = useDispatch();
@@ -164,10 +166,17 @@ const EventPicker = props => {
     summaries.find(e => e.id === values.pub_eventId) ||
     (selectedEvent?.id === values.pub_eventId ? selectedEvent : null);
 
+  // Nothing until the seller types. fuzzyScore treats an empty query as matching everything, which
+  // dumped the entire catalog on screen and made a search box look like a list to scroll. The box
+  // is the interface; results are its answer.
   const suggestions = useMemo(
-    () => fuzzySearch(summaries, query, e => `${e.title} ${e.venue || ''}`, MAX_SUGGESTIONS),
+    () =>
+      query.trim()
+        ? fuzzySearch(summaries, query, e => `${e.title} ${e.venue || ''}`, MAX_SUGGESTIONS)
+        : [],
     [summaries, query]
   );
+  const hasSearched = !!query.trim();
 
   const selectEvent = chosen => {
     if (!chosen) return;
@@ -182,6 +191,9 @@ const EventPicker = props => {
     });
     setQuery('');
     setIsCreating(false);
+    if (onSelect) {
+      onSelect(chosen);
+    }
   };
 
   const clearSelection = () => {
@@ -259,14 +271,14 @@ const EventPicker = props => {
 
   return (
     <div className={css.root}>
-      <label className={css.searchLabel} htmlFor={`${formId}eventSearch`}>
-        <FormattedMessage id="EventPicker.label" />
-      </label>
+      {/* The step's question is the visible label. Keeping a second "Which event is your ticket
+          for?" directly above the box asks the same thing twice. */}
       <input
         id={`${formId}eventSearch`}
         className={css.searchInput}
         type="text"
         autoComplete="off"
+        aria-label={intl.formatMessage({ id: 'EventPicker.label' })}
         value={query}
         placeholder={intl.formatMessage({ id: 'EventPicker.searchPlaceholder' })}
         onChange={e => {
@@ -281,11 +293,7 @@ const EventPicker = props => {
             const date = formatEventDate(event.eventDate);
             return (
               <li key={event.id}>
-                <button
-                  type="button"
-                  className={css.suggestion}
-                  onClick={() => selectEvent(event)}
-                >
+                <button type="button" className={css.suggestion} onClick={() => selectEvent(event)}>
                   <span className={css.suggestionTitle}>{event.title}</span>
                   <span className={css.suggestionMeta}>
                     {[date, event.venue].filter(Boolean).join(' · ')}
@@ -295,23 +303,21 @@ const EventPicker = props => {
             );
           })}
         </ul>
-      ) : (
+      ) : hasSearched ? (
         <p className={css.noMatches}>
-          {query ? (
-            <FormattedMessage id="EventPicker.noMatches" values={{ query }} />
-          ) : (
-            <FormattedMessage id="EventPicker.noEvents" />
-          )}
+          <FormattedMessage id="EventPicker.noMatches" values={{ query }} />
         </p>
-      )}
+      ) : null}
 
+      {/* Before a search there is nothing to add an event *instead of*, so the escape hatch stays
+          out of the way until the seller has looked and not found it. */}
       {isCreating ? (
         <CreateEventForm onCreated={selectEvent} onCancel={() => setIsCreating(false)} />
-      ) : (
+      ) : hasSearched ? (
         <button type="button" className={css.linkButton} onClick={() => setIsCreating(true)}>
           <FormattedMessage id="EventPicker.createPrompt" />
         </button>
-      )}
+      ) : null}
     </div>
   );
 };

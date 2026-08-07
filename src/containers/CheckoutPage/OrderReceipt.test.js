@@ -12,7 +12,9 @@ const { UUID } = sdkTypes;
 const seller = sellerStats => ({
   id: new UUID('u1'),
   type: 'user',
-  attributes: { profile: { displayName: 'Hector B', publicData: sellerStats ? { sellerStats } : {} } },
+  attributes: {
+    profile: { displayName: 'Hector B', publicData: sellerStats ? { sellerStats } : {} },
+  },
 });
 
 const ticket = ({ eventId = 'e1', ticketType = 'pdf', author } = {}) => ({
@@ -86,7 +88,12 @@ describe('OrderReceipt', () => {
   });
 
   it('shows a verified seller as verified', () => {
-    const author = seller({ averageRating: 4.6, reviewCount: 9, completedSalesCount: 12, isVerified: true });
+    const author = seller({
+      averageRating: 4.6,
+      reviewCount: 9,
+      completedSalesCount: 12,
+      isVerified: true,
+    });
     renderReceipt({ listing: ticket({ author }) });
     expect(screen.getByText('OrderReceipt.verified')).toBeInTheDocument();
   });

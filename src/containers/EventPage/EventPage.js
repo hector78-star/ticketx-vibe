@@ -128,9 +128,7 @@ export const EventPageComponent = () => {
                     <dt className={css.guidanceTerm}>
                       <FormattedMessage id="EventPage.soldCount" />
                     </dt>
-                    <dd className={css.guidanceValue}>
-                      {intl.formatNumber(event.soldCount)}
-                    </dd>
+                    <dd className={css.guidanceValue}>{intl.formatNumber(event.soldCount)}</dd>
                   </div>
                 ) : null}
               </dl>
@@ -145,10 +143,7 @@ export const EventPageComponent = () => {
           <FormattedMessage id="EventPage.ticketsHeading" />
           {tickets.length > 0 ? (
             <span className={css.ticketCount}>
-              <FormattedMessage
-                id="EventPage.ticketCount"
-                values={{ count: tickets.length }}
-              />
+              <FormattedMessage id="EventPage.ticketCount" values={{ count: tickets.length }} />
             </span>
           ) : null}
         </H2>

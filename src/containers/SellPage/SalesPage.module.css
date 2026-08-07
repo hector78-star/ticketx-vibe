@@ -1,25 +1,118 @@
-.main { padding: 24px 24px 64px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
-.title { margin: 8px 0; }
-.subtitle { composes: marketplaceBodyFontStyles from global; margin: 0 0 28px 0; color: var(--colorGrey500); }
-.notice { composes: marketplaceBodyFontStyles from global; color: var(--colorGrey500); }
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
-.card { padding: 20px; border: 1px solid var(--colorGrey100); border-radius: var(--borderRadiusMedium, 8px); }
-.cardHead { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-.cardTitle { composes: h4 from global; margin: 0 0 2px 0; }
-.cardMeta { composes: marketplaceTinyFontStyles from global; margin: 0; color: var(--colorGrey500); }
-.cardAmount { composes: h4 from global; margin: 0; white-space: nowrap; }
-.tracker { margin-bottom: 12px; }
-.trackBg { height: 8px; border-radius: 100px; background-color: var(--colorGrey100); overflow: hidden; }
-.trackFillBase { height: 100%; border-radius: 100px; transition: width 0.3s ease; }
-.trackFillSold { composes: trackFillBase; background-color: #f1c40f; }
-.trackFillDelivered { composes: trackFillBase; background-color: #e67e22; }
-.trackFillConfirmed { composes: trackFillBase; background-color: #27ae60; }
-.trackFillDisputed { composes: trackFillBase; background-color: #e74c3c; }
-.trackFillCanceled { composes: trackFillBase; background-color: var(--colorGrey300); }
-.trackLabels { display: flex; justify-content: space-between; margin-top: 6px; }
-.trackPercent { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey500); }
-.status { composes: marketplaceTinyFontStyles from global; color: var(--colorGrey700); font-weight: var(--fontWeightSemiBold); }
-.statusDisputed { composes: marketplaceTinyFontStyles from global; color: var(--colorFail); font-weight: var(--fontWeightSemiBold); }
-.note { composes: marketplaceTinyFontStyles from global; margin: 4px 0 0 0; color: var(--colorGrey500); }
-.noteDisputed { composes: marketplaceTinyFontStyles from global; margin: 4px 0 0 0; color: var(--colorFail); }
-.cardLink { composes: marketplaceTinyFontStyles from global; color: var(--marketplaceColor); }
+.main {
+  padding: 24px 24px 64px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+.title {
+  margin: 8px 0;
+}
+.subtitle {
+  composes: marketplaceBodyFontStyles from global;
+  margin: 0 0 28px 0;
+  color: var(--colorGrey500);
+}
+.notice {
+  composes: marketplaceBodyFontStyles from global;
+  color: var(--colorGrey500);
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card {
+  padding: 20px;
+  border: 1px solid var(--colorGrey100);
+  border-radius: var(--borderRadiusMedium, 8px);
+}
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.cardTitle {
+  composes: h4 from global;
+  margin: 0 0 2px 0;
+}
+.cardMeta {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 0;
+  color: var(--colorGrey500);
+}
+.cardAmount {
+  composes: h4 from global;
+  margin: 0;
+  white-space: nowrap;
+}
+.tracker {
+  margin-bottom: 12px;
+}
+.trackBg {
+  height: 8px;
+  border-radius: 100px;
+  background-color: var(--colorGrey100);
+  overflow: hidden;
+}
+.trackFillBase {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+.trackFillSold {
+  composes: trackFillBase;
+  background-color: #f1c40f;
+}
+.trackFillDelivered {
+  composes: trackFillBase;
+  background-color: #e67e22;
+}
+.trackFillConfirmed {
+  composes: trackFillBase;
+  background-color: #27ae60;
+}
+.trackFillDisputed {
+  composes: trackFillBase;
+  background-color: #e74c3c;
+}
+.trackFillCanceled {
+  composes: trackFillBase;
+  background-color: var(--colorGrey300);
+}
+.trackLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.trackPercent {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey500);
+}
+.status {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorGrey700);
+  font-weight: var(--fontWeightSemiBold);
+}
+.statusDisputed {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--colorFail);
+  font-weight: var(--fontWeightSemiBold);
+}
+.note {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 4px 0 0 0;
+  color: var(--colorGrey500);
+}
+.noteDisputed {
+  composes: marketplaceTinyFontStyles from global;
+  margin: 4px 0 0 0;
+  color: var(--colorFail);
+}
+.cardLink {
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--marketplaceColor);
+}

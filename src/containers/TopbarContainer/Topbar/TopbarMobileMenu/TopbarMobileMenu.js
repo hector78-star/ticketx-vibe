@@ -85,6 +85,14 @@ const TopbarMobileMenu = props => {
 
   const user = ensureCurrentUser(currentUser);
 
+  // Hoisted above the signed-out early return so both branches can mark the current page.
+  const currentPageClass = page => {
+    const isAccountSettingsPage =
+      page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
+    const isInboxPage = currentPage?.indexOf('InboxPage') === 0 && page?.indexOf('InboxPage') === 0;
+    return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
+  };
+
   const extraLinks = customLinks.map((linkConfig, index) => {
     return (
       <CustomLinkComponent
@@ -100,6 +108,17 @@ const TopbarMobileMenu = props => {
       <FormattedMessage id="TopbarMobileMenu.newListingLink" />
     </NamedLink>
   ) : null;
+
+  // Browse is public, so it belongs in both the signed-out and signed-in menus. The desktop
+  // topbar has always carried it (TopbarDesktop renders BrowseLinks unconditionally); this
+  // menu did not, which left a phone with no route to browse at all.
+  const buyLink = (
+    <li className={classNames(css.navigationLink, currentPageClass('BuyPage'))}>
+      <NamedLink name="BuyPage">
+        <FormattedMessage id="TopbarMobileMenu.buyLink" />
+      </NamedLink>
+    </li>
+  );
 
   if (!isAuthenticated) {
     const signup = (
@@ -132,6 +151,8 @@ const TopbarMobileMenu = props => {
             />
           </div>
 
+          <ul className={css.productLinksWrapper}>{buyLink}</ul>
+
           <ul className={css.customLinksWrapper}>{extraLinks}</ul>
 
           <div className={css.spacer} />
@@ -147,12 +168,6 @@ const TopbarMobileMenu = props => {
     ) : null;
 
   const displayName = user.attributes.profile.firstName;
-  const currentPageClass = page => {
-    const isAccountSettingsPage =
-      page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
-    const isInboxPage = currentPage?.indexOf('InboxPage') === 0 && page?.indexOf('InboxPage') === 0;
-    return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
-  };
 
   const manageListingsLinkMaybe = showCreateListingsLink ? (
     <li className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}>
@@ -172,6 +187,22 @@ const TopbarMobileMenu = props => {
         <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
           <FormattedMessage id="TopbarMobileMenu.logoutLink" />
         </InlineTextButton>
+
+        {/* Product destinations first, account settings second. My tickets is the one a
+            student needs at the door of a ball, so it must not sit below Profile settings. */}
+        <ul className={css.productLinksWrapper}>
+          {buyLink}
+          <li className={classNames(css.navigationLink, currentPageClass('MyTicketsPage'))}>
+            <NamedLink name="MyTicketsPage">
+              <FormattedMessage id="TopbarMobileMenu.myTicketsLink" />
+            </NamedLink>
+          </li>
+          <li className={classNames(css.navigationLink, currentPageClass('SellPage'))}>
+            <NamedLink name="SellPage">
+              <FormattedMessage id="TopbarMobileMenu.sellLink" />
+            </NamedLink>
+          </li>
+        </ul>
 
         <ul className={css.accountLinksWrapper}>
           <li className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}>

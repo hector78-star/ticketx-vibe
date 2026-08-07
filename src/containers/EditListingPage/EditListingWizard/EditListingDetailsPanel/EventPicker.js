@@ -6,9 +6,9 @@ import { FormattedMessage, useIntl } from '../../../../util/reactIntl';
 import { useConfiguration } from '../../../../context/configurationContext';
 import { getListingsById } from '../../../../ducks/marketplaceData.duck';
 import { fetchEvents, createSellerEvent } from '../../../../ducks/events.duck';
-import { eventSummary, formatEventDate, formatPence } from '../../../../util/events';
+import { eventSummary, formatEventDate } from '../../../../util/events';
 import { fuzzySearch } from '../../../../util/fuzzyMatch';
-import { Button } from '../../../../components';
+import { Button, EventStats } from '../../../../components';
 
 import css from './EventPicker.module.css';
 
@@ -223,8 +223,6 @@ const EventPicker = props => {
 
   // Selected state: show what was chosen plus the pricing guidance, with a way back.
   if (selected) {
-    const faceValue = formatPence(selected.faceValue, config.currency);
-    const lastSold = formatPence(selected.lastSoldPrice, config.currency);
     const date = formatEventDate(selected.eventDate);
 
     return (
@@ -245,22 +243,18 @@ const EventPicker = props => {
           <h4 className={css.guidanceHeading}>
             <FormattedMessage id="EventPicker.guidanceHeading" />
           </h4>
-          <dl className={css.guidanceList}>
-            <div className={css.guidanceRow}>
-              <dt className={css.guidanceTerm}>
-                <FormattedMessage id="EventPicker.faceValue" />
-              </dt>
-              <dd className={css.guidanceValue}>{faceValue || '—'}</dd>
-            </div>
-            <div className={css.guidanceRow}>
-              <dt className={css.guidanceTerm}>
-                <FormattedMessage id="EventPicker.lastSold" />
-              </dt>
-              <dd className={css.guidanceValue}>
-                {lastSold || intl.formatMessage({ id: 'EventPicker.noSalesYet' })}
-              </dd>
-            </div>
-          </dl>
+          {/* Same component as the browse card and the event page, so a seller pricing a
+              ticket reads the same numbers, laid out the same way, as the buyer who will
+              judge that price. Sold stays visible here: a seller deciding what to ask
+              benefits from knowing how many have already gone. */}
+          <EventStats
+            className={css.guidanceList}
+            faceValue={selected.faceValue}
+            lastSoldPrice={selected.lastSoldPrice}
+            soldCount={selected.soldCount}
+            currency={config.currency}
+            keepSoldOnMobile
+          />
           <p className={css.guidanceNote}>
             <FormattedMessage id="EventPicker.guidanceNote" />
           </p>

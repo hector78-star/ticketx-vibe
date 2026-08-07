@@ -1,14 +1,15 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { FormattedMessage, useIntl } from '../../util/reactIntl';
+import { FormattedMessage } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { getListingsById } from '../../ducks/marketplaceData.duck';
-import { eventSummary, formatEventDate, formatPence } from '../../util/events';
+import { eventSummary, formatEventDate } from '../../util/events';
 
 import {
   Page,
   LayoutSingleColumn,
+  EventStats,
   H1,
   H2,
   TicketCard,
@@ -29,7 +30,6 @@ import css from './EventPage.module.css';
  * on page one.
  */
 export const EventPageComponent = () => {
-  const intl = useIntl();
   const config = useConfiguration();
 
   const { eventId, ticketIds, notFound, inProgress, error } = useSelector(state => state.eventPage);
@@ -52,8 +52,6 @@ export const EventPageComponent = () => {
   }
 
   const date = event ? formatEventDate(event.eventDate) : null;
-  const faceValue = event ? formatPence(event.faceValue, config.currency) : null;
-  const lastSold = event ? formatPence(event.lastSoldPrice, config.currency) : null;
 
   const ticketsBody = error ? (
     <p className={css.notice}>
@@ -105,33 +103,23 @@ export const EventPageComponent = () => {
               <p className={css.eventMeta}>
                 {[date, event.eventTime, event.venue].filter(Boolean).join(' · ')}
               </p>
-              <dl className={css.guidance}>
-                <div className={css.guidanceRow}>
-                  <dt className={css.guidanceTerm}>
-                    <FormattedMessage id="EventPage.faceValue" />
-                  </dt>
-                  <dd className={css.guidanceValue}>{faceValue || '—'}</dd>
-                </div>
-                <div className={css.guidanceRow}>
-                  <dt className={css.guidanceTerm}>
-                    <FormattedMessage id="EventPage.lastSold" />
-                  </dt>
-                  <dd className={css.guidanceValue}>
-                    {lastSold || intl.formatMessage({ id: 'EventPage.noSalesYet' })}
-                  </dd>
-                </div>
-                {/* Only rendered when admin has entered a figure. 0 is a real answer ("none sold
-                    yet") and must still show; undefined means nobody is tracking it, and inventing
-                    a "0 sold" for an event nobody has counted would be a lie. */}
-                {typeof event.soldCount === 'number' ? (
-                  <div className={css.guidanceRow}>
-                    <dt className={css.guidanceTerm}>
-                      <FormattedMessage id="EventPage.soldCount" />
-                    </dt>
-                    <dd className={css.guidanceValue}>{intl.formatNumber(event.soldCount)}</dd>
-                  </div>
-                ) : null}
-              </dl>
+              {/* Shared with the browse card and the listing flow's EventPicker, so the same
+                  numbers read the same way wherever a seller or buyer meets them. The zero
+                  semantics that used to be documented here now live in the component: sold
+                  shows at 0 because "none sold yet" is a real answer, waiting hides at 0
+                  because nobody waiting is not worth stating.
+
+                  keepSoldOnMobile because this page has the room the card does not - sold is
+                  the stat dropped at 390px on the grid. */}
+              <EventStats
+                className={css.guidance}
+                faceValue={event.faceValue}
+                lastSoldPrice={event.lastSoldPrice}
+                soldCount={event.soldCount}
+                watcherCount={event.watcherCount}
+                currency={config.currency}
+                keepSoldOnMobile
+              />
               <NamedLink className={css.sellCta} name="NewListingPage">
                 <FormattedMessage id="EventPage.sellCta" />
               </NamedLink>

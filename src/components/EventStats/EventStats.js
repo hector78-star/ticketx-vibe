@@ -51,9 +51,16 @@ const EventStats = props => {
   const faceValueText = formatPence(faceValue, currency);
   const lastSoldText = formatPence(lastSoldPrice, currency);
 
-  // A count of zero is rendered as absence, not as "0 waiting" - nobody waiting is not a
-  // fact worth stating, and a literal zero reads as a dead event.
-  const hasSold = typeof soldCount === 'number' && soldCount > 0;
+  // The two counts have deliberately different zero semantics.
+  //
+  // soldCount: 0 is a real answer - "none sold yet" - and must show. undefined means
+  // nobody is tracking it, and inventing "0 sold" for an event nobody has counted would
+  // be a lie. This reasoning predates the component; it was documented on EventPage.
+  //
+  // watcherCount: 0 renders as absence. Nobody waiting is not a fact worth stating, and
+  // a literal "0 waiting" reads as a dead event on exactly the page that needs to look
+  // alive during launch week.
+  const hasSold = typeof soldCount === 'number';
   const hasWatchers = typeof watcherCount === 'number' && watcherCount > 0;
 
   return (

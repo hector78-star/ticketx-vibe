@@ -593,6 +593,24 @@ export const listingTypes = [
   {
     listingType: EVENT_LISTING_TYPE,
     label: 'Event',
+    // Stays on default-inquiry even though events are also what people set alerts on.
+    //
+    // A watch IS a transaction against the event listing (ext/transaction-processes/
+    // default-watch), so the obvious move is to point this type at default-watch. Do not.
+    //
+    // transactionProcessAlias is stored on each listing at creation and is a contract
+    // between the listing, the marketplace and the client app - not something the API
+    // enforces. transactions/initiate takes processAlias as an explicit parameter, and
+    // there is no error for it differing from the listing's own. So the watch control
+    // passes 'default-watch/release-1' directly and this field is left alone.
+    //
+    // Three things follow from that, all good:
+    //   - the events already on the marketplace need no migration
+    //   - old and new events behave identically
+    //   - events never become "transactable" to the template, so ListingPage and
+    //     EventPage do not start rendering an OrderPanel for a catalogue entry
+    //
+    // This field governs the event's own (unused) inquiry flow. It is not the watch.
     transactionType: {
       process: 'default-inquiry',
       alias: 'default-inquiry/release-1',

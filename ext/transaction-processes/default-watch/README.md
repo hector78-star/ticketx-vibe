@@ -1,6 +1,7 @@
 # default-watch — CREATED, NOT YET WIRED
 
-**Status: version 1 exists on `ticketx1-dev`.** Created 2026-08-07 and verified by pulling
+**Status: version 1 and alias `default-watch/release-1` exist on `ticketx1-dev`.** Created
+2026-08-07 and verified by pulling
 it back: the `.edn` is semantically identical to this directory and both templates round-trip
 byte-identical (after normalising CRLF). The rendered email was previewed end to end and every
 protected-data key resolves.
@@ -93,14 +94,36 @@ No webfonts: email clients will not load Instrument Serif reliably, so the one d
 falls back to Georgia and everything else to Helvetica/Arial. Left-aligned single column,
 hairline rules only, exactly one button.
 
+## Do NOT point the EVENT listing type at this process
+
+The obvious move is to set the EVENT listing type's `transactionType` to `default-watch`.
+Don't. `src/config/configListing.js` carries the same note.
+
+`transactionProcessAlias` is stored on each listing at creation and is a **contract between
+the listing, the marketplace and the client app** — not something the API enforces.
+`transactions/initiate` takes `processAlias`
+[as an explicit body parameter](https://www.sharetribe.com/api-reference/marketplace.html#initiate-transaction),
+and the documented error list for initiate has no error for it differing from the listing's
+stored alias. So the watch control passes `default-watch/release-1` directly.
+
+Three things follow, all of them good:
+
+- the events already on the marketplace need no migration
+- old and new events behave identically
+- events never become "transactable" to the template, so `ListingPage` and `EventPage` do not
+  start rendering an `OrderPanel` for a catalogue entry — which retires task E24 entirely
+
+Verified from the docs and the template's own README, **not** empirically: initiating a
+`default-watch` transaction against an event listing has not been run against the API, because
+that needs an authenticated user. `transactions/initiateSpeculative` runs full validation
+without changing state and is the cheapest way to prove it when someone is logged in.
+
 ## Still to do before a single alert can fire
 
-1. **Point a listing type at this process.** The EVENT listing type in
-   `src/config/configListing.js` needs a `transactionType` using `default-watch`, or
-   `transactions.initiate` has nothing to initiate against. Until then the ALERT ME control
-   cannot be wired.
-2. **Verify `EventPage` does not start rendering `OrderPanel`** once event listings become
-   transactable. Task E24, and easy to miss.
+1. **Wire the ALERT ME control** to `transactions.initiate` with
+   `processAlias: 'default-watch/release-1'` and `transition: 'transition/watch'`, passing the
+   event's listing id.
+2. **Wire unwatch** on the Alerts page to `transition/unwatch`.
 3. **Integration API credentials.** The fan-out queries watchers and runs operator
    transitions, and only the Integration API can do either.
 4. **Build the notify endpoint and sweeper**, honouring the transition ceiling above.

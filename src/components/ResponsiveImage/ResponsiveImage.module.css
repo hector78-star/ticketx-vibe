@@ -4,11 +4,18 @@
   width: 100%;
 }
 
+/* The absence of a photo, stated quietly.
+ *
+ * In a grid of result cards the placeholder has to stay - removing it would collapse the card and
+ * break the row - but it does not have to announce itself. A grey slab captioned NO IMAGE was
+ * louder than the real photographs beside it, and tickets frequently have no photo of their own, so
+ * this is the common case rather than an error. Near-white with a faint mark reads as "nothing
+ * here" without competing. */
 .noImageContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: var(--colorGrey100);
+  background-color: var(--colorGrey50);
 }
 
 .noImageWrapper {
@@ -21,12 +28,15 @@
 .noImageIcon {
   padding-top: 24px;
   box-sizing: content-box;
+  opacity: 0.45;
   stroke: var(--colorGrey700);
 }
 
 .noImageText {
-  composes: h6 from global;
-  color: var(--colorGrey700);
+  composes: marketplaceTinyFontStyles from global;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--colorGrey500);
   padding-bottom: 24px;
 
   margin-bottom: 0;

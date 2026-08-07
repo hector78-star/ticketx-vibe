@@ -1,48 +1,51 @@
 /* One ticket in the event page list. No image: the event is already pictured above, and every
-   ticket for it would otherwise repeat the same photo. */
+   ticket for it would otherwise repeat the same photo.
+
+   The whole row is a link and that is correct here. The design system allows a card only when
+   the card IS the interaction, and a ticket row has exactly one action - pick this ticket. That
+   is different from the browse event card, which has two and therefore stopped being a link. */
 .card {
   list-style: none;
-  border: 1px solid var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium, 8px);
-  background-color: var(--colorWhite);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover {
-  border-color: var(--colorGrey300);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  /* Hairline above each entry. With the box gone, whitespace alone at grid gap was not
+     enough separation for a list people scan to compare prices, and a rule per entry is
+     what the design system uses in place of borders. */
+  border-top: 1px solid var(--colorGrey100);
 }
 
 .link {
   display: block;
-  padding: 16px 18px;
+  padding: 16px 0;
   text-decoration: none;
   color: inherit;
 }
 
 .link:hover {
   text-decoration: none;
+  opacity: 0.7;
 }
 
 .top {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 10px;
 }
 
+/* Was a filled pill with a 100px radius. The design system has no pills and no filled chips,
+   and a rounded grey capsule is one of the patterns that reads as template. It is a label, so
+   it now uses the label treatment: 13px, tracked, grey600, no container. */
 .ticketType {
-  composes: marketplaceTinyFontStyles from global;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey700);
-  background-color: var(--colorGrey50);
-  border-radius: 100px;
-  padding: 3px 10px;
+  color: var(--colorGrey900);
 }
 
 .platform {
   composes: marketplaceTinyFontStyles from global;
-  color: var(--colorGrey500);
+  color: var(--colorGrey600);
 }
 
 .priceBlock {
@@ -75,17 +78,21 @@
   font-weight: var(--fontWeightSemiBold);
 }
 
-/* Over face value is called out, not buried: the marketplace promises buyers they save money. */
+/* Over face value is called out, not buried: the marketplace promises buyers they save money.
+   --colorFail measures 4.77:1 on white and clears AA for small text. */
 .priceOver {
   color: var(--colorFail);
 }
 
+/* Was #27ae60, which measures 2.87:1 on white and badly fails AA at this size - meaning the
+   one message that proves the marketplace saves you money was the least readable text on the
+   page. #157347 measures 5.87:1 and is still unmistakably green. */
 .priceUnder {
-  color: #27ae60;
+  color: #157347;
 }
 
 .priceAt {
-  color: var(--colorGrey500);
+  color: var(--colorGrey600);
 }
 
 .seller {
@@ -104,8 +111,10 @@
 
 /* The verified badge and rating live in SellerReputation, shared with the listing page. */
 
+/* Quiet, not accent. An event page shows eleven of these at once, and eleven accent-coloured
+   calls to action mean the accent signals nothing at all. The accent is reserved for the one
+   primary action on a screen. */
 .cta {
-  composes: marketplaceTinyFontStyles from global;
-  color: var(--marketplaceColor);
-  font-weight: var(--fontWeightSemiBold);
+  composes: ctaLinkQuiet from global;
+  display: inline-flex;
 }

@@ -127,7 +127,9 @@
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  /* Wider column gap than row gap: each entry carries its own hairline now, so the columns
+     need clear air between them or adjacent rules read as one ruled table. */
+  gap: 0 32px;
 }
 
 @media (min-width: 550px) {

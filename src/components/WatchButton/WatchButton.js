@@ -62,8 +62,19 @@ const WatchButton = props => {
 
     if (!isAuthenticated) {
       setPendingWatch(eventId);
-      const signupPath = pathByRouteName('SignupPage', routeConfiguration);
-      history.push(`${signupPath}?from=${encodeURIComponent(location.pathname)}`);
+      // The return address goes in router history state, NOT the query string.
+      // AuthenticationPage reads `location.state?.from` and nothing else, so a ?from=
+      // parameter is silently ignored and the user lands on the homepage after signing
+      // up - taking the pending watch with it, because the effect that applies it only
+      // runs on the events pages. Routes.js:201 and four other call sites already do it
+      // this way; matching them is what keeps this from drifting again.
+      //
+      // search and hash are included so returning to a filtered browse page keeps the
+      // filter the user had applied.
+      history.push({
+        pathname: pathByRouteName('SignupPage', routeConfiguration),
+        state: { from: `${location.pathname}${location.search}${location.hash}` },
+      });
       return;
     }
 

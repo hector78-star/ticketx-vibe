@@ -101,6 +101,26 @@ const alertsSlice = createSlice({
 
 export const alertsReducer = alertsSlice.reducer;
 
+/**
+ * Which of the loaded watch transactions are still watched.
+ *
+ * This page fetches its own transactions, but whether a watch is still ON lives in the
+ * shared watch state, because that is what the alert control writes to. Those were two
+ * answers to one question and they drifted: turning an alert off flipped the button while
+ * this page kept rendering the row from its own list, so the page invited you to view an
+ * event you had just stopped watching, until a reload.
+ *
+ * Pure and exported so the regression test can pin it without mounting the page.
+ *
+ * @param {Array} loadedTransactions denormalised watch transactions, each with `listing`
+ * @param {Object} watchedEventIds map of event listing id -> watch transaction id
+ */
+export const selectStillWatched = (loadedTransactions, watchedEventIds = {}) =>
+  (loadedTransactions || []).filter(tx => {
+    const eventId = tx?.listing?.id?.uuid;
+    return !!eventId && !!watchedEventIds[eventId];
+  });
+
 const AlertRow = props => {
   const { tx, currency } = props;
   const eventListing = tx.listing;
@@ -156,14 +176,26 @@ export const AlertsPageComponent = () => {
 
   const { transactionIds, inProgress, error } = useSelector(state => state.alerts);
   const marketplaceData = useSelector(state => state.marketplaceData);
-  const transactions = useMemo(
-    () =>
-      getMarketplaceEntities(
-        { marketplaceData },
-        transactionIds.map(id => ({ id, type: 'transaction' }))
-      ),
-    [marketplaceData, transactionIds]
-  );
+
+  // Which events are still watched comes from the SHARED watch state, not from this page's
+  // own fetch. Those are two answers to one question, and they drifted: turning an alert off
+  // updated the shared state so the button flipped, while this page kept rendering the row
+  // from its own list. The page contradicted itself - a row inviting you to view an event you
+  // had just stopped watching - until a reload. Reproduced before fixing.
+  //
+  // Deriving from the shared state also means the duck's optimistic flip removes the row the
+  // instant it is tapped, with no round trip.
+  const watchedEventIds = useSelector(state => state.watch.byEventId);
+
+  const watchesFetched = useSelector(state => state.watch.fetched);
+
+  const transactions = useMemo(() => {
+    const loaded = getMarketplaceEntities(
+      { marketplaceData },
+      transactionIds.map(id => ({ id, type: 'transaction' }))
+    );
+    return selectStillWatched(loaded, watchedEventIds);
+  }, [marketplaceData, transactionIds, watchedEventIds]);
 
   useEffect(() => {
     dispatch(fetchAlerts({ config }));
@@ -175,7 +207,10 @@ export const AlertsPageComponent = () => {
     <p className={css.notice}>
       <FormattedMessage id="AlertsPage.error" />
     </p>
-  ) : inProgress && transactions.length === 0 ? (
+  ) : // Wait for BOTH fetches. The rows come from this page's fetch but are filtered by the
+  // shared watch state, so if fetchAlerts resolves first the list is briefly empty and the
+  // empty state flashes before the rows arrive.
+  (inProgress || !watchesFetched) && transactions.length === 0 ? (
     <p className={css.notice}>
       <FormattedMessage id="AlertsPage.loading" />
     </p>

@@ -127,10 +127,23 @@ Verified in a browser against the live marketplace, not just unit tested.
 - **Admin** — `/admin/events`, gated to `REACT_APP_ADMIN_USER_ID`.
 - **Signup** — restricted to `@st-andrews.ac.uk`.
 
-Tests: **1134 client + 184 server, all passing.** `CI=true npx jest` and
+Tests: **1148 client + 184 server.** `CI=true npx jest` and
 `npx jest --roots ./server --testMatch='**/server/**/*.test.js' --testEnvironment=node`.
-`TransactionPage`, `SearchPage` and `app.test.js` occasionally fail in a full parallel run and
-pass on a re-run — an environment artifact. Re-run before believing it.
+
+**A small number of client tests fail intermittently, and it is a different set each time.** The
+offenders are the hosted-asset tests: `LandingPage`, `PrivacyPolicyPage`, `TermsOfServicePage`
+(all "renders the Fallback page on error") and `ListingPage variants › has hero section in
+coverPhoto mode`. Observed on 2026-08-07: two consecutive full runs each failed a *different*
+pair with no overlap, then two later runs passed 1148/1148 clean. They appear to be
+network- or load-sensitive rather than order-sensitive.
+
+**Do not bisect against a single run.** These fail *in isolation* too, not only under
+parallelism, so "it passed when I stashed my change" proves nothing. A wrong root cause was
+reached this way on 2026-08-07 and only caught by running the same test three times (fail, pass,
+pass). Re-run at least twice before attributing a failure to your change.
+
+An earlier version of this file named `TransactionPage`, `SearchPage` and `app.test.js`. That
+list was wrong.
 
 ### What does NOT work yet
 

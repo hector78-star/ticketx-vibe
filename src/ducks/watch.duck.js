@@ -25,6 +25,17 @@ export const WATCH_PROCESS_ALIAS = 'default-watch/release-1';
 export const WATCH_TRANSITION = 'transition/watch';
 export const UNWATCH_TRANSITION = 'transition/unwatch';
 
+/**
+ * Stand-in id held while a watch is being created.
+ *
+ * The optimistic flip needs `byEventId[eventId]` to be truthy before the server has told us
+ * the real transaction id, so this sits there in the meantime. It is NOT a transaction id
+ * and must never reach the API - `unwatchEvent` refuses it explicitly. WatchButton also
+ * blocks clicks while a request is pending, but that guard lives in a component and would
+ * not travel to a second caller; this one is structural.
+ */
+export const OPTIMISTIC_WATCH_ID = 'optimistic';
+
 const WATCH_PROCESS = 'default-watch';
 const WATCHING_STATE = 'state/watching';
 
@@ -114,6 +125,17 @@ export const watchEvent = createAsyncThunk(
 export const unwatchEvent = createAsyncThunk(
   'watch/unwatch',
   async ({ eventId, transactionId }, { extra: sdk, rejectWithValue }) => {
+    // Never transition against the placeholder. If the create is still in flight there is
+    // no real id yet, and sending 'optimistic' would produce a malformed request whose 400
+    // says nothing useful. Rejecting here restores the watch to its on state (see the
+    // rejected reducer), which is accurate: the create has not failed, it has not finished.
+    if (!transactionId || transactionId === OPTIMISTIC_WATCH_ID) {
+      const error = new Error(
+        `Cannot unwatch ${eventId}: the watch is still being created, so it has no transaction id yet.`
+      );
+      log.error(error, 'watch-remove-too-early', { eventId });
+      return rejectWithValue({ eventId, error: storableError(error) });
+    }
     try {
       await sdk.transactions.transition({
         id: transactionId,
@@ -158,7 +180,7 @@ const watchSlice = createSlice({
       .addCase(watchEvent.pending, (state, action) => {
         const { eventId } = action.meta.arg;
         state.pending[eventId] = true;
-        state.byEventId[eventId] = state.byEventId[eventId] || 'optimistic';
+        state.byEventId[eventId] = state.byEventId[eventId] || OPTIMISTIC_WATCH_ID;
       })
       .addCase(watchEvent.fulfilled, (state, action) => {
         const { eventId, transactionId } = action.payload;
@@ -192,7 +214,13 @@ const watchSlice = createSlice({
         // it worked and the user would keep getting alerts they thought they had stopped.
         const { eventId, transactionId } = action.meta.arg;
         state.pending[eventId] = false;
-        state.byEventId[eventId] = transactionId;
+        if (transactionId) {
+          state.byEventId[eventId] = transactionId;
+        } else {
+          // Assigning undefined would leave the key present, and every reader here treats
+          // presence as "watched". Delete instead so the check stays honest.
+          delete state.byEventId[eventId];
+        }
         state.error = action.payload?.error || null;
       });
   },

@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+  {{set-translations (asset "content/email-texts.json")}}
+  {{set-locale (asset "general/localization.json" "locale" "en_US")}}
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+  </head>
+  <!--
+    Built from the approved mockup: designs/alert-email-20260807/variant-A.png, with
+    variant B's footer wording.
+
+    Type: no webfonts. Email clients will not load Instrument Serif reliably, so the one
+    display line falls back to Georgia and everything else to Helvetica/Arial. Money is
+    sans with tabular figures and uses the real pound sign - the mockup rendered "GBP 65"
+    because the image model avoids the glyph, which is a generation artifact and not a
+    design decision.
+
+    Structure: left aligned, single column, hairline rules only. No header banner, no
+    coloured panel, no rounded card, exactly one button. The asking-price-against-face-value
+    comparison is the second thing the eye lands on after the headline, because judging
+    the deal in about three seconds is the whole job of this email.
+
+    Prices arrive as protected data on the ticket-dropped transition - the listing on this
+    transaction is the event, not the ticket that dropped.
+  -->
+  {{#with transaction}}
+  <table style="background-color:#FFFFFF;margin:0 auto;padding:32px 24px;font-family:Helvetica,Arial,sans-serif" align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <table align="center" role="presentation" cellSpacing="0" cellPadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto">
+            <tr>
+              <td>
+                <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#1A1A1A;margin:0 0 24px 0;font-weight:bold">TicketX</p>
+
+                <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:34px;line-height:1.15;color:#1A1A1A;margin:0 0 12px 0">{{t "WatchTicketDropped.Title" "A ticket just dropped for {eventTitle}." eventTitle=listing.title}}</h1>
+
+                <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;color:#5A5A5A;margin:0 0 24px 0">{{protected-data.eventWhen}}</p>
+
+                <table role="presentation" cellSpacing="0" cellPadding="0" border="0" width="100%" style="border-top:1px solid #E1E1E1;margin:0 0 24px 0">
+                  <tr>
+                    <td style="padding-top:24px">
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;color:#5A5A5A;margin:0 0 4px 0">{{t "WatchTicketDropped.AskingPriceLabel" "Asking price"}}</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums;font-size:44px;line-height:1.1;font-weight:bold;color:#1A1A1A;margin:0 0 16px 0">{{protected-data.askingPrice}}</p>
+
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;color:#5A5A5A;margin:0 0 4px 0">{{t "WatchTicketDropped.FaceValueLabel" "Face value"}}</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums;font-size:22px;line-height:1.2;color:#5A5A5A;margin:0 0 24px 0">{{protected-data.faceValue}}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellSpacing="0" cellPadding="0" border="0" width="100%" style="margin:0 0 24px 0">
+                  <tr>
+                    <td bgcolor="#6938EF" style="background-color:#6938EF">
+                      <a href="{{protected-data.ticketUrl}}" style="display:block;padding:18px 24px;font-family:Helvetica,Arial,sans-serif;font-size:15px;letter-spacing:0.08em;text-transform:uppercase;font-weight:bold;color:#FFFFFF;text-decoration:none;text-align:center">{{t "WatchTicketDropped.ViewTicket" "View ticket"}}</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellSpacing="0" cellPadding="0" border="0" width="100%" style="border-top:1px solid #E1E1E1">
+                  <tr>
+                    <td style="padding-top:20px">
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#5A5A5A;margin:0 0 10px 0">{{t "WatchTicketDropped.WhyLabel" "You're receiving this email because you're getting alerts for {eventTitle}." eventTitle=listing.title}}</p>
+                      <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#5A5A5A;margin:0">{{t "WatchTicketDropped.UnsubscribePrompt" "Not interested anymore?"}} <a href="{{protected-data.unwatchUrl}}" style="color:#6938EF;text-decoration:underline">{{t "WatchTicketDropped.Unsubscribe" "Turn off alerts"}}</a>.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  {{/with}}
+</html>

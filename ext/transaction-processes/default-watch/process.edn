@@ -1,0 +1,78 @@
+;; default-watch — a free, no-payment process whose only job is to make an event watch
+;; addressable by Sharetribe's email system.
+;;
+;; WHY A TRANSACTION AT ALL
+;;
+;; A notification's :to must be :actor.role/customer or :actor.role/provider — the two
+;; parties OF THAT TRANSACTION. There is no way to email a third party. So for Sharetribe
+;; to email someone who is merely watching an event, the watch itself has to be a
+;; transaction and the watcher has to be its customer. That is the whole reason this
+;; process exists. Do not "simplify" it into an array on the user's publicData: that would
+;; be tidier and would silently break every alert.
+;;
+;; Side benefit: "who is watching event X" becomes transactions.query({listingId}), a
+;; first-class indexed query, instead of paging the whole userbase and filtering in memory.
+;;
+;;   :transition/watch (customer)
+;;         │
+;;         ▼
+;;   :state/watching ──────┐
+;;         │   ▲           │ :transition/ticket-dropped (operator, self-loop)
+;;         │   └───────────┘ fires :notification/ticket-dropped to the customer
+;;         │
+;;         ├── :transition/unwatch (customer)
+;;         └── :transition/operator-unwatch (operator)
+;;                   │
+;;                   ▼
+;;             :state/unwatched
+;;
+;; THE 100-TRANSITION CEILING — READ BEFORE CHANGING THE FAN-OUT
+;;
+;; Sharetribe caps a transaction at 100 transitions total. Because ticket-dropped loops
+;; back into :state/watching, a watch on a busy event burns one transition per alert and
+;; dies silently at the ceiling — no error, the watcher simply stops hearing anything.
+;; The fan-out MUST check transaction.attributes.transitions.length and, past a threshold
+;; (~90), stop transitioning that watch and re-create it instead. See
+;; server/api-util/watcherAlerts.js.
+;;
+;; The listing on this transaction is the EVENT, not the dropped ticket. The ticket's
+;; asking price, face value and URL are not otherwise reachable from here, so
+;; ticket-dropped carries them in as protected data and the email template reads them
+;; back out. Without update-protected-data the email cannot show the price comparison,
+;; which is the entire point of it.
+
+{:format :v3,
+ :transitions
+ [{:name :transition/watch,
+   :actor :actor.role/customer,
+   :actions [],
+   :to :state/watching}
+
+  ;; Operator-only, because the Integration API can invoke operator transitions and
+  ;; nothing else. Self-loop: the watch stays live so it can alert again.
+  {:name :transition/ticket-dropped,
+   :actor :actor.role/operator,
+   :actions [{:name :action/update-protected-data}],
+   :from :state/watching,
+   :to :state/watching}
+
+  {:name :transition/unwatch,
+   :actor :actor.role/customer,
+   :actions [],
+   :from :state/watching,
+   :to :state/unwatched}
+
+  ;; Needed for account deletion. server/api/delete-account.js runs as operator and
+  ;; cannot invoke the customer's own unwatch, so it needs this one to retire the
+  ;; watches of a user who is leaving.
+  {:name :transition/operator-unwatch,
+   :actor :actor.role/operator,
+   :actions [],
+   :from :state/watching,
+   :to :state/unwatched}],
+
+ :notifications
+ [{:name :notification/ticket-dropped,
+   :on :transition/ticket-dropped,
+   :to :actor.role/customer,
+   :template :watch-ticket-dropped}]}
